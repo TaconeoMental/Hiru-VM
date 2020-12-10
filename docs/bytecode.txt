@@ -46,6 +46,7 @@ CONSTANTS TABLE ENTRY
   |        |        |    0x00 - No constant                                  |
   |        |        |    0x6E - Number constant (ASCII 'n')                  |
   |        |        |    0x73 - String constant (ASCII 's')                  |
+  |        |        |    0x66 - Code Obj. constant (ASCII 'f')               |
   +--------+--------+--------------------------------------------------------+
 
   - Number Constants:
@@ -59,6 +60,13 @@ CONSTANTS TABLE ENTRY
     | 0      | 1      | Length of the string data in bytes.                    |
     +--------+--------+--------------------------------------------------------+
     | 1      | n      | String data with trailing zero padding as required.    |
+    +--------+--------+--------------------------------------------------------+
+
+  - Code Object Constants
+    +--------+--------+--------------------------------------------------------+
+    | Offset | Length | Description                                            |
+    +--------+--------+--------------------------------------------------------+
+    | 0      | n      | Code object data                                       |
     +--------+--------+--------------------------------------------------------+
 
 BYTECODE SEGMENT
@@ -77,3 +85,103 @@ BYTECODE SEGMENT
   +--------+--------+--------------------------------------------------------+
 
 # TODO: Segment to store arbitrary info (file names, line numbers, etc).
+
+
+EXAMPLE
+Here's an example program that prints "¡Hola, Mundo!"
+
+import "io"
+
+concat = function(s1, s2) {
+    return s1 + s2;
+}
+
+main = function() {
+    a = "¡Hola";
+    b = "Mundo!";
+    c = concat(concat(a, ", "), b);
+    io.println(c);
+}
+
+main();
+
+Once compiled and disassembled, the structure of the bytecode will look
+something like this:
+
+HIRU
+SEGMENT .index
+    entries    1
+    0x00       1    6
+    0x01       7    56
+    0x02       63   3
+    0x03       66   11
+SEGMENT .data
+    0x73    2    io
+    0x66    16   concat
+                 SEGMENT .index
+                     entries    1
+                     0x00       10    6
+                     0x01       16    1
+                     0x02       17    3
+                     0x03       20    5
+                 SEGMENT .data
+                 SEGMENT .names
+                     0    s1
+                     1    s2
+                 SEGMENT .code
+                     lname   [0x02] +1 (s1)
+                     lname   [0x02] +2 (s2)
+                     badd
+                     return
+    0x66    38   main
+                 SEGMENT .index
+                     entries    1
+                     0x00       26    6
+                     0x01       32    5
+                     0x02       37    7
+                     0x03       44    18
+                 SEGMENT .data
+                     0x73    5    ¡Hola
+                     0x73    2    , 
+                     0x73    6    Mundo!
+                     0x6e    4    Null
+                 SEGMENT .names
+                     1    a
+                     1    b
+                     1    c
+                     6    concat
+                     2    io
+                     7    println
+                 SEGMENT .code
+                     lconst    [0x01] +1 ("¡Hola")
+                     sname     [0x02] +1 (a)
+                     lconst    [0x01] +2 ("Mundo!")
+                     sname     [0x02] +2 (b)
+                     lname     [0x02] +4 (concat)
+                     lname     [0x02] +4 (concat)
+                     lname     [0x02] +1 (a)
+                     lconst    [0x01] +2 (", ")
+                     callfn    2
+                     lname     [0x02] +2 (b)
+                     callfn    2
+                     sname     [0x02] +3 (c)
+                     lname     [0x02] +5 (io)
+                     lattr     [0x02] +6 (println)
+                     lname     [0x02] +3 (c)
+                     callfn    1
+                     lconst    [0x01] +4 (Null)
+                     return
+SEGMENT .names
+    6    concat
+    4    main
+SEGMENT .global
+    lconst    [0x01] +1 ("io")
+    makemod
+    lconst    [0x01] +2 ([concat])
+    makefn
+    sname     [0x02] +1 (concat)
+    lconst    [0x01] +3 ([main])
+    makefn
+    sname     [0x02] +2 (main)
+    lname     [0x02] +2 (main)
+    callfn

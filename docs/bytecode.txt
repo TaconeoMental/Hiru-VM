@@ -1,0 +1,79 @@
+This document specifies the Hiru-VM bytecode format. Every number represents a
+number of words (4 bytes)
+
+THE HEADER
+Every Hiru-VM .hbc bytecode file starts with a 4 byte magic number as a header:
+
+  0                                           1
+  +----------+----------+----------+----------+
+  |        Hiru-VM Magic = 0x48495255         |
+  +----------+----------+----------+----------+
+
+INDEX TABLE SEGMENT
+  +--------+--------+--------------------------------------------------------+
+  | Offset | Length | Description                                            |
+  +--------+--------+--------------------------------------------------------+
+  | 0      | 1      | The number of entries in the table.                    |
+  +--------+--------+--------------------------------------------------------+
+
+INDEX TABLE ENTRY
+  +--------+--------+--------------------------------------------------------+
+  | Offset | Length | Description                                            |
+  +--------+--------+--------------------------------------------------------+
+  | 0      | 1      | The type of the segment. Must be one of the following: |
+  |        |        |    0x00 - Index Table Segment                          |
+  |        |        |    0x01 - Constant Table Segment                       |
+  |        |        |    0x02 - Bytecode Segment                             |
+  +--------+--------+--------------------------------------------------------+
+  | 1      | 1      | The offset to the segment, relative to the start of    |
+  |        |        | the file.                                              |
+  +--------+--------+--------------------------------------------------------+
+  | 1      | 1      | The length of the segment, including its header.       |
+  +--------+--------+--------------------------------------------------------+
+
+CONSTANTS TABLE SEGMENT
+  +--------+--------+--------------------------------------------------------+
+  | Offset | Length | Description                                            |
+  +--------+--------+--------------------------------------------------------+
+  | 0      | 1      | The number of constants in the table.                  |
+  +--------+--------+--------------------------------------------------------+
+
+CONSTANTS TABLE ENTRY
+  +--------+--------+--------------------------------------------------------+
+  | Offset | Length | Description                                            |
+  +--------+--------+--------------------------------------------------------+
+  | 0      | 1      | The type of the constant. Must be one of:              |
+  |        |        |    0x00 - No constant                                  |
+  |        |        |    0x6E - Number constant (ASCII 'n')                  |
+  |        |        |    0x73 - String constant (ASCII 's')                  |
+  +--------+--------+--------------------------------------------------------+
+
+  - Number Constants:
+    Stored as an Int64 (8 bytes)
+
+  - String Constants:
+    # TODO: Be able to specify encoding type.
+    +--------+--------+--------------------------------------------------------+
+    | Offset | Length | Description                                            |
+    +--------+--------+--------------------------------------------------------+
+    | 0      | 1      | Length of the string data in bytes.                    |
+    +--------+--------+--------------------------------------------------------+
+    | 1      | n      | String data with trailing zero padding as required.    |
+    +--------+--------+--------------------------------------------------------+
+
+BYTECODE SEGMENT
+  Each opcode has a length of 1 byte.
+  +--------+--------+--------------------------------------------------------+
+  | Offset | Length | Description                                            |
+  +--------+--------+--------------------------------------------------------+
+  | 0      | 1      | A Hiru-VM opcode.                                      |
+  +--------+--------+--------------------------------------------------------+
+
+  And each instruction takes exactly one argument.
+  +--------+--------+--------------------------------------------------------+
+  | Offset | Length | Description                                            |
+  +--------+--------+--------------------------------------------------------+
+  | 0      | 1      | An integer (represented as 4 bytes).                   |
+  +--------+--------+--------------------------------------------------------+
+
+# TODO: Segment to store arbitrary info (file names, line numbers, etc).

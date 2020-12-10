@@ -1,0 +1,83 @@
+(
+Este archivo representa el siguiente programa en pseudo código:
+
+import "io"
+
+concat = function(s1, s2) {
+    return s1 + s2;
+}
+
+main = function() {
+    a = "¡Hola";
+    b = "Mundo!";
+    c = concat(concat(a, ", "), b);
+    io.println(c);
+}
+
+main();
+)
+
+data:
+    0 "io"
+    1 [concat]
+    2 [main]
+
+names:
+    0 concat
+    1 main
+
+code:
+    lconst  0 ("io")
+    makemod
+    lconst  1 ([concat])
+    makefn
+    sname   0 (concat)
+    lconst  2 ([main])
+    makefn
+    sname   1 (main)
+    lname   1 (main)
+    callfn
+    return
+
+[concat]
+names:
+    0 s1
+    1 s2
+code:
+    lname 0
+    lname 1
+    badd
+    return
+
+[main]
+data:
+    0 "¡Hola"
+    1 ", "
+    2 "Mundo!"
+    3 Null
+names:
+    0 a
+    1 b
+    2 c
+    3 concat
+    4 io
+    5 println
+code:
+    lconst  0 ("¡Hola")
+    sname   0 (a)
+    lconst  2 ("Mundo!")
+    sname   1 (b)
+    lname   3 (concat)
+    lname   3 (concat)
+    lname   0 (a)
+    lconst  1 (", ")
+    callf   2
+    lname   1 (b)
+    callf   2
+    sname   2 (c)
+    lname   4 (io)
+    lattr   5 (println)
+    lname   2 (c)
+    callf   1
+    lconst  3
+    return

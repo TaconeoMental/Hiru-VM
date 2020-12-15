@@ -1,3 +1,5 @@
+#!/usr/bin/env ruby
+
 $HIRU_MAGIC = 0x48495255
 
 module Opcodes

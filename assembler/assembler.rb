@@ -1,3 +1,5 @@
+#!/usr/bin/env ruby
+
 require_relative 'src/codegen'
 require_relative 'src/tokenizer'
 require_relative 'src/parser'

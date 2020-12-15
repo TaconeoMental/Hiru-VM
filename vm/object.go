@@ -1,20 +1,10 @@
 package vm
 
+// En este archivo se definen las estructuras que representan los distintos
+// objetos de código representados en el bytecode. La especificación completa
+// está en docs/bytecode.txt.
 
-type IndexSegmentEntry {
-        // Tipo de entrada
-        // 0x00 - Index Table Segment
-        // 0x01 - Constant Table Segment
-        // 0x02 - Names Segment
-        // 0x03 - Bytecode Segment
-        entryType     IndexSegmentEntryType
-
-        // El desfase del inicio de la entrada relativo al inicio del archivo
-        relativeStart byte
-
-        // El largo de la entrada contando su header
-        length        byte
-}
+// Index Table Segment //
 
 // Representa el segmento "Indice" de un objeto de código. Este guarda
 // información acerca de la posición absoluta de sus demás partes (Segmento de
@@ -59,9 +49,78 @@ func NewIndexSegment(entries int) *IndexSegment {
         return &is
 }
 
+const (
+        typeIndexSegment = iota
+        typeConstantSegment
+        typeNamesSegment
+        typeCodeSegment
+)
+
+type IndexSegmentEntryType uint8
+type IndexSegmentEntry struct {
+        // Tipo de entrada
+        // 0x00 - Index Table Segment
+        // 0x01 - Constant Table Segment
+        // 0x02 - Names Segment
+        // 0x03 - Bytecode Segment
+        entryType     IndexSegmentEntryType
+
+        // El desfase del inicio de la entrada relativo al inicio del archivo
+        relativeStart byte
+
+        // El largo de la entrada contando su header
+        length        byte
+}
+
+// Data segment //
+// +--------+--------+--------------------------------------------------------+
+// | Offset | Length | Description                                            |
+// +--------+--------+--------------------------------------------------------+
+// | 0      | 1      | The number of constants in the table.                  |
+// +--------+--------+--------------------------------------------------------+
+//
+// CONSTANTS TABLE ENTRY
+// +--------+--------+--------------------------------------------------------+
+// | Offset | Length | Description                                            |
+// +--------+--------+--------------------------------------------------------+
+// | 0      | 1      | The type of the constant. Must be one of:              |
+// |        |        |    0x00 - No constant                                  |
+// |        |        |    0x6E - Number constant (ASCII 'n')                  |
+// |        |        |    0x73 - String constant (ASCII 's')                  |
+// |        |        |    0x66 - Code Obj. constant (ASCII 'f')               |
+// +--------+--------+--------------------------------------------------------+
+//
+// - Number Constants:
+//   Stored as an Int64 (8 bytes)
+//
+// - String Constants:
+//   # TODO: Be able to specify encoding type.
+//   +--------+--------+--------------------------------------------------------+
+//   | Offset | Length | Description                                            |
+//   +--------+--------+--------------------------------------------------------+
+//   | 0      | 1      | Length of the string data in bytes.                    |
+//   +--------+--------+--------------------------------------------------------+
+//   | 1      | n      | String data with trailing zero padding as required.    |
+//   +--------+--------+--------------------------------------------------------+
+//
+// - Code Object Constants
+//   +--------+--------+--------------------------------------------------------+
+//   | Offset | Length | Description                                            |
+//   +--------+--------+--------------------------------------------------------+
+//   | 0      | 1      | Code object data length                                |
+//   +--------+--------+--------------------------------------------------------+
+//   | 1      | n      | Code object data                                       |
+//   +--------+--------+--------------------------------------------------------+
+
+type DataSegment struct {
+        numberEntries uint64
+
+        //data []DataSegmentEntry
+}
+
 type CodeObject struct {
         index IndexSegment
         data DataSegment
-        names NameSegment
-        code CodeSegment
+        //names NameSegment
+        //code CodeSegment
 }

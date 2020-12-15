@@ -4,7 +4,6 @@ import (
         "fmt"
         "os"
         "flag"
-        "path/filepath"
         "log"
 
         "github.com/TaconeoMental/Hiru-VM/vm"
@@ -30,12 +29,15 @@ func main() {
         if filePath := flag.Arg(0); filePath != "" {
 
                 // Expandimos el path para que sea absoluto
-                expandedPath := hirufile.expandPath(filePath)
+                hiruFile, err := vm.NewHiruFile(filePath)
+                if err != nil {
+                        log.Fatal(err.Error())
+                }
 
                 // reemplazar por una función log nueva que tome como argumento
                 // a *debug
                 if *debug {
-                        fmt.Printf("CLI OPTIONS file: '%s' debug: '%t'\n", expandedPath, *debug)
+                        fmt.Printf("CLI OPTIONS file: '%s' debug: '%t'\n", hiruFile.FullPath(), *debug)
                 }
 
                 // Creamos una nueva máquina virtual

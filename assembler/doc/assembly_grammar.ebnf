@@ -1,0 +1,50 @@
+FUNCTION_LITERAL := FUNCTION_ID, DATA_SEGMENT, NAME_SEGMENT, CODE_SEGMENT;
+FUNCTION_ID      := "[", IDENTIFIER, "]";
+
+DATA_SEGMENT     := "SEGMENT .data", [DATA_ENUM];
+DATA_ENUM        := {"@", [0-9]*, LITERAL};
+
+LITERAL          := STRING_LITERAL
+                  | NUMBER_LITERAL
+                  | FUNCTION_LITERAL
+                  | NULL_LITERAL;
+STRING_LITERAL   := """, *, """;
+NUMBER_LITERAL   := "#", NUMBER;
+
+
+NAME_SEGMENT     := "SEGMENT .names", [NAME_ENUM];
+NAME_ENUM        := {"@", [0-9]*, IDENTIFIER};
+
+CODE_SEGMENT     := "SEGMENT .code", [BYTECODE_OPS];
+
+BYTECODE_OPS     := NO_ARG_OPCODE
+                  | LIT_ARG_OPCODE, NUMBER_LITERAL
+                  | INDEX_ARG_OPCODE, "@", [0-9]*;
+
+NO_ARG_OPCODE    := "pop"
+                  | "upos"
+                  | "uneg"
+                  | "unot"
+                  | "bpow"
+                  | "bmul"
+                  | "bdiv"
+                  | "bmod"
+                  | "bsub"
+                  | "badd"
+                  | "band"
+                  | "bor"
+                  | "return"
+                  | "makefn";
+
+LIT_ARG_OPCODE   := "blist"
+                  | "bstr"
+                  | "jumpfwd"
+                  | "pjmpt"
+                  | "pjmpf"
+                  | "jmpabs"
+                  | "callfn";
+
+INDEX_ARG_OPCODE := "sname"
+                  | "lconst"
+                  | "lname"
+                  | "import";

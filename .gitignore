@@ -1,5 +1,6 @@
-# Created by https://www.toptal.com/developers/gitignore/api/ruby,go,python
-# Edit at https://www.toptal.com/developers/gitignore?templates=ruby,go,python
+
+# Created by https://www.toptal.com/developers/gitignore/api/ruby,vim,python,go
+# Edit at https://www.toptal.com/developers/gitignore?templates=ruby,vim,python,go
 
 ### Go ###
 # Binaries for programs and plugins
@@ -221,5 +222,26 @@ build-iPhoneSimulator/
 # Used by RuboCop. Remote config files pulled in from inherit_from directive.
 # .rubocop-https?--*
 
-# End of https://www.toptal.com/developers/gitignore/api/ruby,go,python
+### Vim ###
+# Swap
+[._]*.s[a-v][a-z]
+!*.svg  # comment out if you don't need vector files
+[._]*.sw[a-p]
+[._]s[a-rt-v][a-z]
+[._]ss[a-gi-z]
+[._]sw[a-p]
+
+# Session
+Session.vim
+Sessionx.vim
+
+# Temporary
+.netrwhist
+*~
+# Auto-generated tag files
+tags
+# Persistent undo
+[._]*.un~
+
+# End of https://www.toptal.com/developers/gitignore/api/ruby,vim,python,go
 

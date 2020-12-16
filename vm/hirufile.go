@@ -53,14 +53,56 @@ func (hf HiruFile) FullPath() string {
         return hf.path
 }
 
-func (hf *HiruFile) ReadByte() (byte, error) {
+func (hf *HiruFile) ReadByte() byte {
         var b byte
-        err := binary.Read(hf.buffer, binary.LittleEndian, &b)
-        return b, err
+        binary.Read(hf.buffer, binary.BigEndian, &b)
+        return b
 }
 
-func (hf *HiruFile) ReadWord() (uint16, error) {
-        var w uint16
-        err := binary.Read(hf.buffer, binary.LittleEndian, &w)
-        return w, err
+func (hf *HiruFile) Read4Bytes() uint32 {
+        var w uint32
+        binary.Read(hf.buffer, binary.BigEndian, &w)
+        return w
 }
+
+func (hf *HiruFile) ReadIndexSegment() (*IndexSegment, error) {
+        entries := hf.Read4Bytes()
+
+        index_seg := NewIndexSegment(entries)
+
+        for i := uint32(1); i <= entries; i++ {
+                etype := hf.Read4Bytes()
+                start := hf.Read4Bytes()
+                length := hf.Read4Bytes()
+
+                entry := NewIndexSegmentEntry(etype, start, length)
+                index_seg.AddSegment(*entry)
+        }
+
+        return index_seg, nil
+}
+
+/*
+func (hf *HiruFile) ReadDataSegment() (*DataSegment, error) {
+        entries := hf.Read4Bytes()
+
+        data_seg := NewDataSegment(entries)
+
+        for i := uint32(1); i <= entries; i++ {
+                etype := hf.Read4Bytes()
+                switch etype {
+                case StringConstant:
+                        // TODO
+                case NumberConstant:
+                        // TODO
+                case FunctionConstant:
+                        //TODO
+                }
+
+                entry := NewIndexSegmentEntry(etype, start, length)
+                index_seg.AddSegment(*entry)
+        }
+
+        return data_seg, nil
+}
+*/

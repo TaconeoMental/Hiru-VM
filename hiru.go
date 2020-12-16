@@ -28,30 +28,24 @@ func main() {
         // Si se entregó un path válido entonces proseguimos
         if filePath := flag.Arg(0); filePath != "" {
 
-                // Expandimos el path para que sea absoluto
-                hiruFile, err := vm.NewHiruFile(filePath)
-                if err != nil {
-                        log.Fatal(err.Error())
-                }
-
                 // reemplazar por una función log nueva que tome como argumento
                 // a *debug
                 if *debug {
-                        fmt.Printf("CLI OPTIONS file: '%s' debug: '%t'\n", hiruFile.FullPath(), *debug)
+                        fmt.Printf("CLI OPTIONS file: '%s' debug: '%t'\n", filePath, *debug)
                 }
 
-                // Creamos una nueva máquina virtual
-                /* vm, err := vm.NewVm(filePath, *debug)
+                vm, err := vm.NewVm(filePath, *debug)
                 if err != nil {
-                        log.Fatal("Error creando la VM: ", err.Error())
+                        fmt.Println(err.Error())
+                        return
                 }
 
                 if err := vm.Run(); err != nil {
                         log.Fatal("The VM has encountered an error: ", err.Error())
-                }*/
+                        return
+                }
 
         } else {
-                log.Println("Por favor ingresa un archivo válido")
                 flag.Usage()
                 return
         }

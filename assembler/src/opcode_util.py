@@ -15,6 +15,7 @@ no_args = [
     "BOR",
     "RET",
     "MAKEFN",
+    "MAKEMOD",
 ]
 
 literal_args = [
@@ -32,6 +33,7 @@ index_args = [
     "LCONST",
     "LNAME",
     "IMPORT",
+    "LATTR",
 ]
 
 no_args_separator = "NO_ARGS"

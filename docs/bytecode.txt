@@ -1,5 +1,5 @@
-This document specifies the Hiru-VM bytecode format. Every number represents a
-number of words (4 bytes)
+This document specifies the Hiru-VM bytecode format. Every number represents 2
+bytes unless stated otherwise.
 
 THE HEADER
 Every Hiru-VM .hbc bytecode file starts with a 4 byte magic number as a header:
@@ -22,8 +22,9 @@ INDEX TABLE ENTRY
   +--------+--------+--------------------------------------------------------+
   | 0      | 1      | The type of the segment. Must be one of the following: |
   |        |        |    0x00 - Index Table Segment                          |
-  |        |        |    0x01 - Constant Table Segment                       |
-  |        |        |    0x02 - Bytecode Segment                             |
+  |        |        |    0x01 - Constants Table Segment                      |
+  |        |        |    0x02 - Names Table Segment                          |
+  |        |        |    0x03 - Bytecode Segment                             |
   +--------+--------+--------------------------------------------------------+
   | 1      | 1      | The offset to the segment, relative to the start of    |
   |        |        | the file.                                              |
@@ -44,13 +45,29 @@ CONSTANTS TABLE ENTRY
   +--------+--------+--------------------------------------------------------+
   | 0      | 1      | The type of the constant. Must be one of:              |
   |        |        |    0x00 - No constant                                  |
-  |        |        |    0x6E - Number constant (ASCII 'n')                  |
+  |        |        |    0x69 - Integer constant (ASCII 'i')                 |
+  |        |        |    0x66 - Floating point number constant (ASCII 'i')   |
   |        |        |    0x73 - String constant (ASCII 's')                  |
-  |        |        |    0x66 - Code Obj. constant (ASCII 'f')               |
+  |        |        |    0x63 - Code Obj. constant (ASCII 'c')               |
   +--------+--------+--------------------------------------------------------+
 
-  - Number Constants:
-    Stored as an Int64 (8 bytes)
+  - Intger Constants:
+    +--------+--------+--------------------------------------------------------+
+    | Offset | Length | Description                                            |
+    +--------+--------+--------------------------------------------------------+
+    | 0      | 1      | Null space.                                            |
+    +--------+--------+--------------------------------------------------------+
+    | 1      | 1      | Integer number. Stored as an Int64.                    |
+    +--------+--------+--------------------------------------------------------+
+
+  - Floating point Constants
+    +--------+--------+--------------------------------------------------------+
+    | Offset | Length | Description                                            |
+    +--------+--------+--------------------------------------------------------+
+    | 0      | 1      | Null space.                                            |
+    +--------+--------+--------------------------------------------------------+
+    | 1      | 1      | Floating point number. Stored as a Float64.            |
+    +--------+--------+--------------------------------------------------------+
 
   - String Constants:
     # TODO: Be able to specify encoding type.
@@ -83,7 +100,7 @@ BYTECODE SEGMENT
   +--------+--------+--------------------------------------------------------+
   | Offset | Length | Description                                            |
   +--------+--------+--------------------------------------------------------+
-  | 0      | 1      | An integer (represented as 4 bytes).                   |
+  | 0      | 1      | An integer (represented as 1 byte).                    |
   +--------+--------+--------------------------------------------------------+
 
 # TODO: Segment to store arbitrary info (file names, line numbers, etc).

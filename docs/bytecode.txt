@@ -32,14 +32,14 @@ INDEX TABLE ENTRY
   | 1      | 1      | The length of the segment, including its header.       |
   +--------+--------+--------------------------------------------------------+
 
-CONSTANTS TABLE SEGMENT
+DATA  TABLE SEGMENT
   +--------+--------+--------------------------------------------------------+
   | Offset | Length | Description                                            |
   +--------+--------+--------------------------------------------------------+
   | 0      | 1      | The number of constants in the table.                  |
   +--------+--------+--------------------------------------------------------+
 
-CONSTANTS TABLE ENTRY
+DATA TABLE ENTRY
   +--------+--------+--------------------------------------------------------+
   | Offset | Length | Description                                            |
   +--------+--------+--------------------------------------------------------+
@@ -128,79 +128,74 @@ Once compiled and disassembled, the structure of the bytecode will look
 something like this:
 
 HIRU
-SEGMENT .index
-    entries    1
-    0x00       1    6
-    0x01       7    56
-    0x02       63   3
-    0x03       66   11
-SEGMENT .data
-    0x73    2    io
-    0x66    16   concat
-                 SEGMENT .index
-                     entries    1
-                     0x00       10    6
-                     0x01       16    1
-                     0x02       17    3
-                     0x03       20    5
-                 SEGMENT .data
-                 SEGMENT .names
-                     0    s1
-                     1    s2
-                 SEGMENT .code
-                     lname   [0x02] +1 (s1)
-                     lname   [0x02] +2 (s2)
-                     badd
-                     return
-    0x66    38   main
-                 SEGMENT .index
-                     entries    1
-                     0x00       26    6
-                     0x01       32    5
-                     0x02       37    7
-                     0x03       44    18
-                 SEGMENT .data
-                     0x73    5    ¡Hola
-                     0x73    2    , 
-                     0x73    6    Mundo!
-                     0x6e    4    Null
-                 SEGMENT .names
-                     1    a
-                     1    b
-                     1    c
-                     6    concat
-                     2    io
-                     7    println
-                 SEGMENT .code
-                     lconst    [0x01] +1 ("¡Hola")
-                     sname     [0x02] +1 (a)
-                     lconst    [0x01] +2 ("Mundo!")
-                     sname     [0x02] +2 (b)
-                     lname     [0x02] +4 (concat)
-                     lname     [0x02] +4 (concat)
-                     lname     [0x02] +1 (a)
-                     lconst    [0x01] +2 (", ")
-                     callfn    2
-                     lname     [0x02] +2 (b)
-                     callfn    2
-                     sname     [0x02] +3 (c)
-                     lname     [0x02] +5 (io)
-                     lattr     [0x02] +6 (println)
-                     lname     [0x02] +3 (c)
-                     callfn    1
-                     lconst    [0x01] +4 (Null)
-                     return
-SEGMENT .names
-    6    concat
-    4    main
-SEGMENT .global
-    lconst    [0x01] +1 ("io")
-    makemod
-    lconst    [0x01] +2 ([concat])
-    makefn
-    sname     [0x02] +1 (concat)
-    lconst    [0x01] +3 ([main])
-    makefn
-    sname     [0x02] +2 (main)
-    lname     [0x02] +2 (main)
-    callfn    0
+SEGMENT .index 4
+      index_table 4 52
+      data_table 56 418
+      name_table 474 22
+      code_table 496 84
+SEGMENT .data 3
+      String 2 "io"
+      Function 108
+            SEGMENT .index 4
+                  index_table 78 52
+                  data_table 130 4
+                  name_table 134 16
+                  code_table 150 36
+            SEGMENT .data 0
+            SEGMENT .name 2
+                  2 s1
+                  2 s2
+            SEGMENT .code 4
+                  lname 0
+                  lname 1
+                  badd 
+                  ret 
+      Function 280
+            SEGMENT .index 4
+                  index_table 142 52
+                  data_table 194 42
+                  name_table 236 46
+                  code_table 282 140
+            SEGMENT .data 3
+                  String 6 "¡Hola"
+                  String 2 ", "
+                  String 6 "Mundo!"
+            SEGMENT .name 6
+                  1 a
+                  1 b
+                  1 c
+                  6 concat
+                  2 io
+                  7 println
+            SEGMENT .code 17
+                  lconst 0
+                  sname 0
+                  lconst 2
+                  sname 1
+                  lname 3
+                  lname 3
+                  lname 0
+                  lconst 1
+                  callfn 2
+                  lname 1
+                  callfn 2
+                  sname 2
+                  lname 4
+                  lattr 5
+                  lname 2
+                  callfn 1
+                  ret 
+SEGMENT .name 2
+      6 concat
+      4 main
+SEGMENT .code 10
+      lconst 0
+      makemod 
+      lconst 1
+      makefn 
+      sname 0
+      lconst 2
+      makefn 
+      sname 1
+      lname 1
+      callfn 0

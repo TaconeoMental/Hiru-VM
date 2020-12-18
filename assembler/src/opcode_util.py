@@ -51,6 +51,7 @@ def op_count(op_type, count):
     return f"  {op_type} = 0x{count:02x}"
 
 def main():
+    print("RUBY CODE")
     print(header)
 
     count = 0
@@ -78,7 +79,7 @@ def main():
         print(op_count(index_args[max_index - count - 1], count))
         count += 1
 
-    print("end")
+    print("end\n")
 
     # from_string
     print("def opcode_from_string(str)\n  op = case str")
@@ -92,7 +93,7 @@ def main():
         print(to_s_format(op))
 
     print("       end")
-    print("  op\nend")
+    print("  op\nend\n")
 
     print("def opcode_str(op)\n  str = case op")
     for op in no_args:
@@ -106,6 +107,17 @@ def main():
 
     print("       end")
     print("  str\nend")
+    print("END RUBY CODE\n")
+    print("START GO CODE")
+
+    print("type Opcode uint8")
+    print("const (")
+    print(f"        {no_args[0]} Opcode = iota")
+    for op in no_args[1:] + literal_args + index_args:
+        print(f"        {op}")
+    print(")")
+
+    print("END GO CODE")
 
 if __name__ == "__main__":
     main()

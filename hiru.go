@@ -11,6 +11,8 @@ import (
 
 func main() {
         debug := flag.Bool("debug", false, "Run the VM in debug mode.")
+        objectMode := flag.Bool("obi", false, "Object based interpretation. Parses the bytecode as objects and then interprets them (Default).")
+        indexMode := flag.Bool("ibi", false, "Index based interpretation. Directly interprets the bytecode without any intermediate representation.")
 
         // Definimos nuestro propio usage del CLI
         flag.Usage = func() {
@@ -25,6 +27,22 @@ func main() {
         // Parseamos los argumentos
         flag.Parse()
 
+        var mode vm.VmMode
+
+        // Son mutuamente excluyentes
+        if *objectMode && *indexMode {
+                fmt.Fprintln(os.Stderr, "Error: '-obi' and '-ibi' can not be selected mutually.")
+                flag.Usage()
+                return
+        } else if *objectMode {
+                mode = vm.ObjectBasedMode
+        } else if *indexMode {
+                mode = vm.IndexBasedMode
+        } else {
+
+                mode = vm.ObjectBasedMode
+        }
+
         // Si se entregó un path válido entonces proseguimos
         if filePath := flag.Arg(0); filePath != "" {
 
@@ -34,7 +52,9 @@ func main() {
                         fmt.Printf("CLI OPTIONS file: '%s' debug: '%t'\n", filePath, *debug)
                 }
 
-                vm, err := vm.NewVm(filePath, *debug)
+                options := vm.NewVmOptions(*debug, mode)
+
+                vm, err := vm.NewVm(filePath, *options)
                 if err != nil {
                         fmt.Println(err.Error())
                         return

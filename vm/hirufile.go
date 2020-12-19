@@ -23,7 +23,14 @@ func expandPath(path string) (string, error) {
 
 type HiruFile struct {
         path   string
+
+        // Esto es para ObjectBasedMode
         buffer *bytes.Reader
+
+        indexPointer int
+
+        // Este para IndexBasedMode
+        //buffer []byte
 }
 
 func NewHiruFile(path string) (*HiruFile, error) {
@@ -40,10 +47,15 @@ func NewHiruFile(path string) (*HiruFile, error) {
         }
 
         hf.buffer = bytes.NewReader(content)
+        hf.indexPointer = 0
         return hf, nil
 }
 
 // Métodos
+
+func (hf HiruFile) Buffer() *bytes.Reader {
+        return hf.buffer
+}
 
 func (hf HiruFile) FileName() string {
         return filepath.Base(hf.path)
@@ -56,12 +68,23 @@ func (hf HiruFile) FullPath() string {
 func (hf *HiruFile) ReadByte() byte {
         var b byte
         binary.Read(hf.buffer, binary.BigEndian, &b)
+
+        hf.indexPointer += 1
         return b
+}
+
+func (hf *HiruFile) Seek(offset int) int {
+        hf.buffer.Seek(0, offset)
+
+        hf.indexPointer = offset
+        return offset
 }
 
 func (hf *HiruFile) Read4Bytes() uint32 {
         var w uint32
         binary.Read(hf.buffer, binary.BigEndian, &w)
+
+        hf.indexPointer += 4
         return w
 }
 

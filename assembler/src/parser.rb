@@ -1,7 +1,6 @@
 require_relative 'ast'
 require_relative 'opcode'
 
-
 class Parser
     def initialize(tokenizer)
       @tokens = tokenizer.each
@@ -131,11 +130,16 @@ class Parser
         pushToken
         opcode = opcode_from_string(@current_token.value)
         if not opcode
-          addParseError("Error: '#{@current_token.value}' is not an opcode.")
-        end
-  
-        if not has_arg(opcode)
+          # Significa que es un label
+          label = @current_token.value
+          consumePeek(TokenKind::OP_COLON)
+          cs.addLabel(label)
+
+        elsif not has_arg(opcode)
           cs.add(opcode, Ast::NullLiteral.new)
+        elsif $jumps.include? opcode
+          consumePeek(TokenKind::IDENTIFIER)
+          cs.add(opcode, Ast::Identifier.new(@current_token.value))
         elsif peekTokenEquals(TokenKind::OP_AT)
           pushToken
           if not index_arg?(opcode)

@@ -14,9 +14,17 @@ const (
         BADD
         BAND
         BOR
+        CMPLT
+        CMPLE
+        CMPEQ
+        CMPNE
+        CMPGT
+        CMPGE
         RET
         MAKEFN
         MAKEMOD
+        NO_ARGS
+
         BLIST
         BSTR
         JUMPFWD
@@ -24,9 +32,15 @@ const (
         PJMPF
         JMPABS
         CALLFN
-        SNAME
-        LCONST
-        LNAME
-        IMPORT
+        LITERAL_ARGS
+
         LATTR
+        IMPORT
+        LNAME
+        LCONST
+        SNAME
 )
+
+func HasArgs(op Opcode) bool {
+        return op > NO_ARGS
+}

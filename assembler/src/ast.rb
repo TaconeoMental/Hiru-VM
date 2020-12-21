@@ -131,6 +131,10 @@ module Ast
       @code_hash.push([key, val])
     end
 
+    def addLabel(name)
+      @code_hash.push([name, "l"])
+    end
+
     def codeLength
       @code_hash.length
     end

@@ -60,36 +60,45 @@ package vm
 type DataSegment struct {
         numberEntries uint32
 
-        entries []DataSegmentEntry
+        entries []HiruObject
 }
 
 func NewDataSegment(entries uint32) *DataSegment {
         ds := DataSegment{numberEntries: entries}
-        ds.entries = make([]DataSegmentEntry, 0)
+        ds.entries = make([]HiruObject, 0)
         return &ds
 }
 
-func (ds *DataSegment) AddEntry(entry DataSegmentEntry) {
+func (ds *DataSegment) AddEntry(entry HiruObject) {
         ds.entries = append(ds.entries, entry)
+}
+
+func (ds *DataSegment) ConstantAt(index uint32) HiruObject {
+        return ds.entries[index]
 }
 
 // Tipos de entries para el data segment
 type DataSegmentEntryType uint32
 const (
-        typeNumberConstant DataSegmentEntryType = iota
-        typeStringConstant
-        typeFunctionConstant
+        typeNumberConstant DataSegmentEntryType = 0x69
+        typeStringConstant = 0x73
+        typeFunctionConstant = 0x63
 )
 
 // Entrada para el DataSegment
 type DataSegmentEntry interface {
         getLength() uint32 // In bytes
-        getType() uint8
+        getType() DataSegmentEntryType
 }
 
 // TIPO: Num
 type NumberConstant struct {
         value uint32
+        vType uint32
+}
+
+func NewNumberConstant(value uint32, t uint32) *NumberConstant {
+        return &NumberConstant{value: value, vType: t}
 }
 
 func (i NumberConstant) getLength() uint32 {
@@ -110,6 +119,10 @@ type StringConstant struct {
         length uint32 // in bytes
 }
 
+func NewStringConstant(v string, l uint32) *StringConstant {
+        return &StringConstant{value: v, length: l}
+}
+
 func (s StringConstant) getLength() uint32 {
         return uint32(len(s.value))
 }
@@ -125,8 +138,12 @@ func (s StringConstant) getValue() string {
 // TIPO: Function
 
 type FunctionConstant struct {
-        value string
-        length uint32 // in bytes
+        value *CodeObject
+        length uint32
+}
+
+func NewFunctionConstant(cobj *CodeObject) *FunctionConstant {
+        return &FunctionConstant{value: cobj}
 }
 
 func (f FunctionConstant) getLength() uint32 {
@@ -136,3 +153,8 @@ func (f FunctionConstant) getLength() uint32 {
 func (f FunctionConstant) getType() DataSegmentEntryType {
     return typeFunctionConstant
 }
+ /*
+func (f *FunctionConstant) getValue() *CodeObject {
+        return f.value
+}
+*/

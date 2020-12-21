@@ -13,6 +13,12 @@ no_args = [
     "BADD",
     "BAND",
     "BOR",
+    "CMPLT",
+    "CMPLE",
+    "CMPEQ",
+    "CMPNE",
+    "CMPGT",
+    "CMPGE",
     "RET",
     "MAKEFN",
     "MAKEMOD",
@@ -113,7 +119,18 @@ def main():
     print("type Opcode uint8")
     print("const (")
     print(f"        {no_args[0]} Opcode = iota")
-    for op in no_args[1:] + literal_args + index_args:
+    for op in no_args[1:]:
+        print(f"        {op}")
+    print(f"        {no_args_separator}\n")
+
+    literal_args[:] =  literal_args[-8:] + literal_args[:-8]
+
+    for op in literal_args:
+        print(f"        {op}")
+
+    print(f"        {literal_args_separator}\n")
+
+    for op in index_args[::-1]:
         print(f"        {op}")
     print(")")
 

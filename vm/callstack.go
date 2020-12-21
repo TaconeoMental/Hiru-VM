@@ -3,11 +3,13 @@ package vm
 import (
         "sync"
         "errors"
+        "fmt"
+        "os"
 )
 
 type CallStack struct {
-        records         []*StackFrame
-        lock            sync.Mutex
+        records []*StackFrame
+        lock    sync.Mutex
 }
 
 func NewCallStack() *CallStack {
@@ -39,7 +41,7 @@ func (cs *CallStack) Pop() (*StackFrame, error) {
     return res, nil
 }
 
-func (cs *CallStack) ResolveName(name string) (*HiruObject, error) {
+func (cs *CallStack) ResolveName(name string) (HiruObject, error) {
         value, err := cs.GetTopMost().ResolveName(name)
         if err != nil {
                 current_global := cs.GetTopMost().LinkedTo()
@@ -58,20 +60,29 @@ func (cs *CallStack) GetTopMost() *StackFrame {
         return cs.records[len(cs.records)-1]
 }
 
-func (cs *CallStack) Define(name string, obj *HiruObject) *HiruObject {
+func (cs *CallStack) Define(name string, obj HiruObject) HiruObject {
         cs.GetTopMost().Define(name, obj)
         return obj
 }
 
+func (cs *CallStack) PrettyPrint() {
+        fmt.Println("#### CALL STACK ####")
+        for _, s := range cs.records {
+                s.PrettyPrint()
+        }
+        fmt.Println("#### END CALL STACK ####")
+}
+
+// STACK FRAME
 type StackFrame struct {
         name   string
         parent *StackFrame
-        enviroment map[string]*HiruObject
+        enviroment map[string]HiruObject
 }
 
 func NewStackFrame(name string) *StackFrame {
         sf := StackFrame{name: name}
-        sf.enviroment = make(map[string]*HiruObject)
+        sf.enviroment = make(map[string]HiruObject)
         return &sf
 }
 
@@ -87,11 +98,11 @@ func (sf StackFrame) LinkedTo() *StackFrame {
         return sf.parent
 }
 
-func (sf *StackFrame) Define(name string, obj *HiruObject) {
+func (sf *StackFrame) Define(name string, obj HiruObject) {
         sf.enviroment[name] = obj
 }
 
-func (sf *StackFrame) ResolveName(name string) (*HiruObject, error) {
+func (sf *StackFrame) ResolveName(name string) (HiruObject, error) {
         value, err := sf.GetLocalName(name)
         if err != nil {
                 if sf.parent != nil {
@@ -103,9 +114,19 @@ func (sf *StackFrame) ResolveName(name string) (*HiruObject, error) {
         return value, err
 }
 
-func (sf *StackFrame) GetLocalName(name string) (*HiruObject, error) {
+func (sf *StackFrame) GetLocalName(name string) (HiruObject, error) {
         if obj, ok := sf.enviroment[name]; ok {
                 return obj, nil
         }
         return nil, errors.New("Local value not found")
+}
+
+// TODO: Meterle más empeño a esta función xd
+func (sf* StackFrame) PrettyPrint() {
+        fmt.Println("+---------------------------------------------+")
+        fmt.Fprintf(os.Stdout, "|                   %s\n", sf.name)
+        for k, v := range sf.enviroment {
+                fmt.Fprintf(os.Stdout, "| %s => %v\n", k, v.Inspect())
+        }
+        fmt.Println("+---------------------------------------------+")
 }

@@ -71,10 +71,10 @@ class Disassembler
       type = readNum
       length = readNum
       case type
-      when 0x6E
+      when 0x69
         num = readNum
         puts "#{indent(level + 1)}Number #{length} #{num}"
-      when 0x66
+      when 0x63
         puts "#{indent(level + 1)}Function #{length}"
         dissasembleFunction(level + 2)
       when 0x73
@@ -96,14 +96,30 @@ class Disassembler
     n_opcodes = readNum
     puts "#{indent(level)}SEGMENT .code #{n_opcodes}"
 
+    instructions = Array.new
+    jump_positions = Array.new
     n_opcodes.times do
       opcode = readNum
       arg = readNum
 
+      if $jumps.include? opcode
+        jump_positions.push(arg / (2 * 4))
+      end
+
       if arg == 0x6E
         arg = ""
       end
-      puts "#{indent(level + 1)}#{opcode_str(opcode)} #{arg}"
+      instructions.push([opcode, arg])
+    end
+
+    count = 0
+    instructions.each do |opcode, arg|
+      if jump_positions.include? count
+        puts "\n#{indent(level)}   >> #{opcode_str(opcode)} #{arg}"
+      else
+        puts "#{indent(level + 1)}#{opcode_str(opcode)} #{arg}"
+      end
+      count += 1
     end
   end
 

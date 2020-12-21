@@ -32,15 +32,15 @@ type IndexSegment struct {
 
 // Constructor de un segmento de índice.
 func NewIndexSegment(entries uint32) *IndexSegment {
-        is := IndexSegment{numberEntries: entries}
+        is := new(IndexSegment)
+        is.numberEntries = entries
         is.entries = make([]IndexSegmentEntry, entries)
-        return &is
+        return is
 }
 
 func (is *IndexSegment) AddSegment(segment IndexSegmentEntry) {
         is.entries[segment.Type()] = segment
 }
-
 
 type IndexSegmentEntryType uint32
 const (

@@ -114,11 +114,11 @@ class CodeGenerator
   def dataSegmentTypeCode(node)
     case node
     when Ast::IntLiteral
-      return 0x6E
+      return 0x69
     when Ast::StringLiteral
       return 0x73
     when Ast::FunctionNode
-      return 0x66
+      return 0x63
     end
   end
 
@@ -217,15 +217,39 @@ class CodeGenerator
       return
 
     when Ast::CodeSegmentNode
-      @hbc_file.write_4_bytes(node.codeLength)
+      # Genero los índices para los jumps
+      # El formato es:
+      # jumps[nombre] = [hash_del_label, num_instrucción]
+      jumps = Hash.new
+      instruction_count = 0
+      number_repr = 0
+      node.code.each do |key, val|
+        if val == "l"
+          jumps[key] = [number_repr, instruction_count]
+          number_repr += 1
+          instruction_count -= 1
+        end
+        instruction_count += 1
+      end
+
+      @hbc_file.write_4_bytes(node.codeLength - jumps.length)
       pushIndex(4)
 
       node.code.each do |key, val|
+        if val == "l"
+          next
+        end
+
         @hbc_file.write_4_bytes(key)
         pushIndex(4)
 
         if val.is_a? Ast::NullLiteral
           @hbc_file.write_4_bytes(0x6e) # 0x6E == Null
+        elsif val.is_a? Ast::Identifier
+          position = jumps[val.Value][1] * 2 * 4
+          @hbc_file.write_4_bytes(position)
+        elsif val == "l"
+          next
         else
           @hbc_file.write_4_bytes(val.value.to_i)
         end

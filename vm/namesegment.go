@@ -28,14 +28,22 @@ func NewNameSegment(entries uint32) *NameSegment {
         return &ns
 }
 
-func (ns *NameSegment) AddSegment(segment NameSegmentEntry) {
+func (ns *NameSegment) AddEntry(segment NameSegmentEntry) {
         ns.entries = append(ns.entries, segment)
+}
+
+func (ns *NameSegment) NameAt(index uint32) NameSegmentEntry {
+        return ns.entries[index]
 }
 
 type NameSegmentEntry struct {
         // El largo de la entrada contando su header
         length uint32
         value  string
+}
+
+func NewNameSegmentEntry(value string, length uint32) *NameSegmentEntry {
+        return &NameSegmentEntry{length: length, value: value}
 }
 
 func (ns *NameSegment) Entries() []NameSegmentEntry {

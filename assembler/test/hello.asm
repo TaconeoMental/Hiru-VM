@@ -3,7 +3,7 @@ SEGMENT .data
     @0    [concat]
           SEGMENT .data
           SEGMENT .names
-            @0    s1
+            @0    s1 ("wena")
             @1    s2
           SEGMENT .code
             lname    @0

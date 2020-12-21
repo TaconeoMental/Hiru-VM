@@ -65,12 +65,41 @@ func (hf HiruFile) FullPath() string {
         return hf.path
 }
 
+func (hf *HiruFile) ReadBytes(length int) []byte {
+        b := make([]byte, length)
+
+        binary.Read(hf.buffer, binary.BigEndian, &b)
+
+        hf.indexPointer += length
+        return b
+}
+
 func (hf *HiruFile) ReadByte() byte {
+        b := hf.ReadBytes(1)
+
+        byteBuffer := bytes.NewReader(b)
+        var byteVar byte
+        binary.Read(byteBuffer, binary.BigEndian, &byteVar)
+        return byteVar
+
+        /*
         var b byte
         binary.Read(hf.buffer, binary.BigEndian, &b)
 
         hf.indexPointer += 1
         return b
+        */
+}
+
+func (hf *HiruFile) Read4Bytes() uint32 {
+        return binary.BigEndian.Uint32(hf.ReadBytes(4))
+        /*
+        var w uint32
+        binary.Read(hf.buffer, binary.BigEndian, &w)
+
+        hf.indexPointer += 4
+        return w
+        */
 }
 
 func (hf *HiruFile) Seek(offset int) int {
@@ -79,53 +108,3 @@ func (hf *HiruFile) Seek(offset int) int {
         hf.indexPointer = offset
         return offset
 }
-
-func (hf *HiruFile) Read4Bytes() uint32 {
-        var w uint32
-        binary.Read(hf.buffer, binary.BigEndian, &w)
-
-        hf.indexPointer += 4
-        return w
-}
-
-func (hf *HiruFile) ReadIndexSegment() (*IndexSegment, error) {
-        entries := hf.Read4Bytes()
-
-        index_seg := NewIndexSegment(entries)
-
-        for i := uint32(1); i <= entries; i++ {
-                etype := hf.Read4Bytes()
-                start := hf.Read4Bytes()
-                length := hf.Read4Bytes()
-
-                entry := NewIndexSegmentEntry(etype, start, length)
-                index_seg.AddSegment(*entry)
-        }
-
-        return index_seg, nil
-}
-
-/*
-func (hf *HiruFile) ReadDataSegment() (*DataSegment, error) {
-        entries := hf.Read4Bytes()
-
-        data_seg := NewDataSegment(entries)
-
-        for i := uint32(1); i <= entries; i++ {
-                etype := hf.Read4Bytes()
-                switch etype {
-                case StringConstant:
-                        // TODO
-                case NumberConstant:
-                        // TODO
-                case FunctionConstant:
-                        //TODO
-                }
-
-                entry := NewIndexSegmentEntry(etype, start, length)
-                index_seg.AddSegment(*entry)
-        }
-
-        return data_seg, nil
-}
-*/

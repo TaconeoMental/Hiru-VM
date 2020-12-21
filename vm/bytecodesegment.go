@@ -15,10 +15,29 @@ package vm
 //   | 0      | 1      | An integer (represented as 1 byte).                    |
 //   +--------+--------+--------------------------------------------------------+
 
-type CodeSegment struct {
+type BytecodeSegment struct {
         numberEntries uint32
         entries       []Instruction
 }
+
+func NewBytecodeSegment(entries uint32) *BytecodeSegment {
+        return &BytecodeSegment{
+                numberEntries: entries,
+                entries: make([]Instruction, 0)}
+}
+
+func (bs *BytecodeSegment) AddEntry(entry Instruction) {
+        bs.entries = append(bs.entries, entry)
+}
+
+func (bs *BytecodeSegment) Instructions() []Instruction {
+        return bs.entries
+}
+
+func (bs *BytecodeSegment) InstructionAt(index uint32) Instruction {
+        return bs.entries[index]
+}
+
 
 type Instruction struct {
         opcode   Opcode

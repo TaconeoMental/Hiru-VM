@@ -10,21 +10,22 @@ module TokenKind
   OP_OPEN_BRACKETS  = 0x03
   OP_CLOSE_BRACKETS = 0x04
   OP_DOT            = 0x05
+  OP_COLON          = 0x06
 
-  LITERAL_STRING = 0x06
-  LITERAL_FLOAT  = 0x07
-  LITERAL_INT    = 0x08
+  LITERAL_STRING = 0x07
+  LITERAL_FLOAT  = 0x08
+  LITERAL_INT    = 0x09
 
-  IDENTIFIER = 0x09
+  IDENTIFIER = 0x0A
 
-  KEY_HIRU = 0x0A
-  KEY_SEGMENT = 0x0B
-  KEY_DATA    = 0x0C
-  KEY_NAMES   = 0x0D
-  KEY_CODE    = 0x0E
+  KEY_HIRU = 0x0B
+  KEY_SEGMENT = 0x0C
+  KEY_DATA    = 0x0D
+  KEY_NAMES   = 0x0E
+  KEY_CODE    = 0x0F
 
-  UNKNOWN = 0x0F
-  EOF = 0x10
+  UNKNOWN = 0x10
+  EOF = 0x11
 end
 
 def token_string(tok)
@@ -43,6 +44,8 @@ def token_string(tok)
         "@"
       when TokenKind::OP_DOT
         "."
+      when TokenKind::OP_COLON
+        ":"
       when TokenKind::OP_OPEN_BRACKETS
         "["
       when TokenKind::OP_CLOSE_BRACKETS
@@ -162,6 +165,8 @@ class Tokenizer
           TokenKind::OP_HASH
         when '.'
           TokenKind::OP_DOT
+        when ':'
+          TokenKind::OP_COLON
         when '['
           TokenKind::OP_OPEN_BRACKETS
         when ']'
@@ -171,6 +176,15 @@ class Tokenizer
         end
     addToken(t)
     true
+  end
+
+  def checkComment
+    if @current_char == "("
+      readUntil(")")
+      return true
+    else
+      return false
+    end
   end
 
   def checkLiteral
@@ -246,7 +260,7 @@ class Tokenizer
 
   def tokenize!
     while pushChar
-      if checkWord or check_operator or checkLiteral
+      if checkWord or check_operator or checkLiteral or checkComment
         next
       else
         if not is_whitespace(@current_char)

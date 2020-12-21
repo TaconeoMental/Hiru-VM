@@ -46,12 +46,6 @@ func main() {
         // Si se entregó un path válido entonces proseguimos
         if filePath := flag.Arg(0); filePath != "" {
 
-                // reemplazar por una función log nueva que tome como argumento
-                // a *debug
-                if *debug {
-                        fmt.Printf("CLI OPTIONS file: '%s' debug: '%t'\n", filePath, *debug)
-                }
-
                 options := vm.NewVmOptions(*debug, mode)
 
                 vm, err := vm.NewVm(filePath, *options)

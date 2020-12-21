@@ -19,7 +19,8 @@ CODE_SEGMENT     := "SEGMENT .code", [BYTECODE_OPS];
 
 BYTECODE_OPS     := NO_ARG_OPCODE
                   | LIT_ARG_OPCODE, NUMBER_LITERAL
-                  | INDEX_ARG_OPCODE, "@", [0-9]*;
+                  | INDEX_ARG_OPCODE, "@", [0-9]*
+                  | IDENTIFIER, ":";
 
 NO_ARG_OPCODE    := "pop"
                   | "upos"

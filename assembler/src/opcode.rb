@@ -11,25 +11,31 @@ module Opcodes
   BADD = 0x09
   BAND = 0x0a
   BOR = 0x0b
-  RET = 0x0c
-  MAKEFN = 0x0d
-  MAKEMOD = 0x0e
-  NO_ARGS = 0x0f
+  CMPLT = 0x0c
+  CMPLE = 0x0d
+  CMPEQ = 0x0e
+  CMPNE = 0x0f
+  CMPGT = 0x10
+  CMPGE = 0x11
+  RET = 0x12
+  MAKEFN = 0x13
+  MAKEMOD = 0x14
+  NO_ARGS = 0x15
 
-  BSTR = 0x10
-  JUMPFWD = 0x11
-  PJMPT = 0x12
-  PJMPF = 0x13
-  JMPABS = 0x14
-  CALLFN = 0x15
   BLIST = 0x16
-  LITERAL_ARGS = 0x17
+  BSTR = 0x17
+  JUMPFWD = 0x18
+  PJMPT = 0x19
+  PJMPF = 0x1a
+  JMPABS = 0x1b
+  CALLFN = 0x1c
+  LITERAL_ARGS = 0x1d
 
-  LATTR = 0x18
-  IMPORT = 0x19
-  LNAME = 0x1a
-  LCONST = 0x1b
-  SNAME = 0x1c
+  LATTR = 0x1e
+  IMPORT = 0x1f
+  LNAME = 0x20
+  LCONST = 0x21
+  SNAME = 0x22
 end
 
 def opcode_from_string(str)
@@ -58,6 +64,18 @@ def opcode_from_string(str)
          Opcodes::BAND
        when "bor"
          Opcodes::BOR
+       when "cmplt"
+         Opcodes::CMPLT
+       when "cmple"
+         Opcodes::CMPLE
+       when "cmpeq"
+         Opcodes::CMPEQ
+       when "cmpne"
+         Opcodes::CMPNE
+       when "cmpgt"
+         Opcodes::CMPGT
+       when "cmpge"
+         Opcodes::CMPGE
        when "ret"
          Opcodes::RET
        when "makefn"
@@ -118,6 +136,18 @@ def opcode_str(op)
          "band"
        when Opcodes::BOR
          "bor"
+       when Opcodes::CMPLT
+         "cmplt"
+       when Opcodes::CMPLE
+         "cmple"
+       when Opcodes::CMPEQ
+         "cmpeq"
+       when Opcodes::CMPNE
+         "cmpne"
+       when Opcodes::CMPGT
+         "cmpgt"
+       when Opcodes::CMPGE
+         "cmpge"
        when Opcodes::RET
          "ret"
        when Opcodes::MAKEFN
@@ -163,3 +193,5 @@ end
 def literal_arg?(op)
   return op < Opcodes::LITERAL_ARGS && op > Opcodes::NO_ARGS
 end
+
+$jumps = [Opcodes::PJMPT, Opcodes::PJMPF, Opcodes::JMPABS, Opcodes::JUMPFWD]

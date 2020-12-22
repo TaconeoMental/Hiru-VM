@@ -23,15 +23,17 @@ const (
         RET
         MAKEFN
         MAKEMOD
+        EXIT
+        PRINT
         NO_ARGS
 
-        BLIST
-        BSTR
         JUMPFWD
         PJMPT
         PJMPF
         JMPABS
         CALLFN
+        BLIST
+        BSTR
         LITERAL_ARGS
 
         LATTR

@@ -79,6 +79,11 @@ func (f *HiruFunction) RawObject() *CodeObject {
         return f.CodeObject
 }
 
+// Para el ffi
+type HiruForeignFunction struct {
+        // TODO
+}
+
 // Módulo en Hiru
 type HiruModule struct {
         CodeObject *CodeObject

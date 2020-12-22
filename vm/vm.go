@@ -6,22 +6,24 @@ import (
         "os"
 )
 
+/*
 // Enum del modo de ejecución de la VM
 type VmMode uint8
 const (
         IndexBasedMode VmMode = iota
         ObjectBasedMode
 )
+*/
 
 // Opciones para la vm
 type VmOptions struct {
         debug           bool
-        mode          VmMode
+        //mode          VmMode
 }
 
 // Constructor para las opciones
-func NewVmOptions(debug bool, mode VmMode) *VmOptions {
-    return &VmOptions{debug: debug, mode: mode}
+func NewVmOptions(debug bool) *VmOptions {
+    return &VmOptions{debug: debug}
 }
 
 type HiruVM struct {
@@ -33,10 +35,7 @@ type HiruVM struct {
 
         objectStack  ObjectStack
 
-        // Para OBI
-        mainObject   *CodeObject
-        tempObject   *CodeObject // Reemplazar esto por un stack o meterlo directamente en cada stack frame.
-        isReturn     bool
+        ip          uint32
 }
 
 func NewVm(filepath string, options VmOptions) (*HiruVM, error) {
@@ -53,10 +52,12 @@ func NewVm(filepath string, options VmOptions) (*HiruVM, error) {
 
         vm.mainFile = hirufile
         vm.vmOptions = options
+        vm.ip = 0
 
         return vm, nil
 }
 
+// Wrapper para Fprint
 func (vm *HiruVM) DebugPrint(s string, params ...interface{}) {
         switch {
         case !vm.vmOptions.debug:
@@ -75,18 +76,11 @@ func (vm *HiruVM) DebugPrint(s string, params ...interface{}) {
 func (vm *HiruVM) DebugPrintCallStack() {
         vm.callStack.PrettyPrint()
 }
+
 func (vm *HiruVM) Run() (error) {
         vm.DebugPrint("VM.Run() called")
 
-        // Empujamos el stackframe global
-        sf := NewStackFrame("global")
-        vm.callStack.Push(sf)
-
-        if vm.vmOptions.mode == ObjectBasedMode {
-                return vm.runObjectBasedVm()
-        } else {
-                return vm.runIndexBasedVm()
-        }
+        return vm.runObjectBasedVm()
 }
 // TODO
 func (vm *HiruVM) runIndexBasedVm() (error) {

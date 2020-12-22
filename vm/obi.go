@@ -2,178 +2,53 @@ package vm
 
 import (
         "math"
+        "fmt"
 )
-
-type CodeObject struct {
-        indexSegment    *IndexSegment
-        dataSegment     *DataSegment
-        nameSegment     *NameSegment
-        bytecodeSegment *BytecodeSegment
-
-        ip               uint32
-}
-
-func NewCodeObject(indexSeg *IndexSegment, dataSeg *DataSegment,
-                nameSeg *NameSegment, bytecodeSeg *BytecodeSegment) *CodeObject {
-        return &CodeObject{
-                indexSegment: indexSeg,
-                dataSegment: dataSeg,
-                nameSegment: nameSeg,
-                bytecodeSegment: bytecodeSeg}
-}
-
-func (vm *HiruVM) getCurrentObject() *CodeObject {
-        var object *CodeObject
-        if vm.tempObject != nil {
-                object = vm.tempObject
-        } else {
-                object = vm.mainObject
-        }
-        return object
-}
 
 // Busca una constante en el data segment del objecto actual
 func (vm *HiruVM) GetConstantAt(index uint32) HiruObject {
-        object := vm.getCurrentObject()
+        object := vm.CurrentObject()
         return object.dataSegment.ConstantAt(index)
 }
 
 // Busca un nombre en el name segment del objecto actual
 func (vm *HiruVM) GetNameAt(index uint32) NameSegmentEntry {
-        object := vm.getCurrentObject()
+        object := vm.CurrentObject()
         return object.nameSegment.NameAt(index)
-}
-
-// Lo que dice. Lee el segmento de indice del bytecode
-func ReadIndexSegment(hf *HiruFile) (*IndexSegment, error) {
-        entries := hf.Read4Bytes()
-
-        index_seg := NewIndexSegment(entries)
-
-        for i := uint32(1); i <= entries; i++ {
-                etype := hf.Read4Bytes()
-                start := hf.Read4Bytes()
-                length := hf.Read4Bytes()
-
-                entry := NewIndexSegmentEntry(etype, start, length)
-                index_seg.AddSegment(*entry)
-        }
-
-        return index_seg, nil
-}
-
-func ReadDataSegment(hf *HiruFile) (*DataSegment, error) {
-        entries := hf.Read4Bytes()
-
-        data_seg := NewDataSegment(entries)
-
-        for i := uint32(1); i <= entries; i++ {
-                etype := hf.Read4Bytes()
-
-                length := hf.Read4Bytes()
-
-                switch DataSegmentEntryType(etype) {
-                case typeNumberConstant:
-                        // En el futuro el largo debería ser el indicador de si es un entero o un flotante
-                        value := hf.Read4Bytes()
-                        number := new(HiruNumber)
-                        number.Value = int64(value)
-                        data_seg.AddEntry(number)
-                        // data_seg.AddEntry(NewNumberConstant(value, length))
-
-                case typeStringConstant:
-                        str := string(hf.ReadBytes(int(length)))
-
-                        hstr := new(HiruString)
-                        hstr.Value = str
-                        data_seg.AddEntry(hstr)
-                        // data_seg.AddEntry(NewStringConstant(str, length))
-
-                case typeFunctionConstant:
-                        codeObj := ReadObject(hf)
-                        hfunc := new(HiruFunction)
-                        hfunc.CodeObject = codeObj
-
-                        data_seg.AddEntry(hfunc)
-                        // data_seg.AddEntry(NewFunctionConstant(codeObj))
-                }
-        }
-
-        return data_seg, nil
-}
-
-func ReadNameSegment(hf *HiruFile) (*NameSegment, error) {
-        entries := hf.Read4Bytes()
-
-        name_seg := NewNameSegment(entries)
-
-        for i := uint32(1); i <= entries; i++ {
-                length := hf.Read4Bytes()
-
-                name := string(hf.ReadBytes(int(length)))
-
-
-                name_seg.AddEntry(*NewNameSegmentEntry(name, length))
-        }
-
-        return name_seg, nil
-}
-
-func ReadBytecodeSegment(hf *HiruFile) (*BytecodeSegment, error) {
-        entries := hf.Read4Bytes()
-
-        bytecode_seg := NewBytecodeSegment(entries)
-
-        for i := uint32(1); i <= entries; i++ {
-                op := hf.Read4Bytes()
-
-                arg := hf.Read4Bytes()
-
-                bytecode_seg.AddEntry(*NewInstruction(Opcode(op), arg))
-        }
-
-        return bytecode_seg, nil
-}
-
-func ReadObject(hf *HiruFile) *CodeObject {
-        is, _ := ReadIndexSegment(hf)
-        ds, _ := ReadDataSegment(hf)
-        ns, _ := ReadNameSegment(hf)
-        bs, _ := ReadBytecodeSegment(hf)
-        return NewCodeObject(is, ds, ns, bs)
 }
 
 
 // Corre la máquina virtual en modo OBI
 func (vm *HiruVM) runObjectBasedVm() (error) {
         vm.DebugPrint("Running in OBI Mode")
-        vm.isReturn = false
+
         mainObject := ReadObject(vm.mainFile)
-        vm.mainObject = mainObject
+
+        sf := NewStackFrame("global", mainObject, 0)
+        vm.callStack.Push(sf)
 
         vm.RunOBIBytecode(mainObject.bytecodeSegment)
 
-        // Por ahora, imprimir el StackFrame final al terminar la ejcución.
-        vm.callStack.PrettyPrint()
         return nil
 
 }
 
 func (vm *HiruVM) RunOBIBytecode(bs *BytecodeSegment) {
-        for true {
+        for vm.ip < bs.numberEntries {
                 instruction := vm.LoadInstruction()
-                vm.RunOBInstruction(instruction)
-
-                if vm.isReturn {
-                        break
+                if instruction.opcode == EXIT {
+                        return
                 }
+
+                vm.RunOBInstruction(instruction)
 
         }
 }
 
 func (vm *HiruVM) LoadInstruction() Instruction {
-        object := vm.getCurrentObject()
-        return object.bytecodeSegment.InstructionAt(object.ip)
+        object := vm.CurrentObject()
+
+        return object.bytecodeSegment.InstructionAt(vm.ip)
 }
 
 // Corre una instrucción
@@ -184,6 +59,7 @@ func (vm *HiruVM) RunOBInstruction(instruction Instruction) {
                 if err != nil {
                         return
                 }
+
         case UPOS:
         case UNEG:
         case UNOT:
@@ -228,13 +104,14 @@ func (vm *HiruVM) RunOBInstruction(instruction Instruction) {
                 num1 := operand1.(*HiruNumber)
                 num2 := operand2.(*HiruNumber)
 
+                vm.DebugPrint("Instruction BMOD: %v %% %v = %v", (*num1).Value, (*num2).Value, (*num1).Value % (*num2).Value)
                 result := new(HiruNumber)
                 result.Value = (*num1).Value % (*num2).Value
                 vm.objectStack.Push(result)
 
         case BSUB:
-                operand1, _ := vm.objectStack.Pop()
                 operand2, _ := vm.objectStack.Pop()
+                operand1, _ := vm.objectStack.Pop()
 
                 num1 := operand1.(*HiruNumber)
                 num2 := operand2.(*HiruNumber)
@@ -262,9 +139,9 @@ func (vm *HiruVM) RunOBInstruction(instruction Instruction) {
                 operand2, _ := vm.objectStack.Pop()
 
                 result := new(HiruBoolean)
+                vm.DebugPrint("%v == %v", operand1.Inspect(), operand2.Inspect())
                 result.Value = operand1.Inspect() == operand2.Inspect()
                 vm.objectStack.Push(result)
-                vm.getCurrentObject().ip += 1
 
         case CMPLT:
                 vm.DebugPrint("Instruction CMPLT")
@@ -278,14 +155,32 @@ func (vm *HiruVM) RunOBInstruction(instruction Instruction) {
                 result := new(HiruBoolean)
                 result.Value = (*num1).Value < (*num2).Value
                 vm.objectStack.Push(result)
-                vm.getCurrentObject().ip += 1
+
+        case CMPLE:
+                vm.DebugPrint("Instruction CMPLE")
+                operand2, _ := vm.objectStack.Pop()
+                operand1, _ := vm.objectStack.Pop()
+
+                num1 := operand1.(*HiruNumber)
+                num2 := operand2.(*HiruNumber)
+
+                vm.DebugPrint("Instruction CMPLE: %v <= %v = %v", (*num1).Value, (*num2).Value, (*num1).Value <= (*num2).Value)
+
+                result := new(HiruBoolean)
+                result.Value = (*num1).Value <= (*num2).Value
+                vm.objectStack.Push(result)
 
 
         case RET:
                 // TODO: No sé muy bien qué hacer acá todavía
                 vm.DebugPrint("Instruction RET")
-                vm.isReturn = true
-                vm.getCurrentObject().ip += 1
+                retVal, _ := vm.callStack.Pop()
+                vm.DebugPrint("%v", retVal.ReturnAddress)
+                vm.ip = retVal.ReturnAddress
+
+        case PRINT:
+                operand, _ := vm.objectStack.Pop()
+                fmt.Println(operand.Inspect())
 
         case MAKEFN:
                 // No se usa en OBI
@@ -301,24 +196,21 @@ func (vm *HiruVM) RunOBInstruction(instruction Instruction) {
                 }
                 magic := newFile.Read4Bytes()
                 if magic != 0x48495255 {
+
                         return
                 }
                 moduleCodeObject := ReadObject(newFile)
-                vm.tempObject = moduleCodeObject
 
-                sf := NewStackFrame(nameString)
+                sf := NewStackFrame(nameString, moduleCodeObject, vm.ip)
                 vm.callStack.Push(sf)
 
-                vm.RunOBIBytecode(vm.tempObject.bytecodeSegment)
+                vm.RunOBIBytecode(vm.CurrentObject().bytecodeSegment)
 
                 moduleObject := new(HiruModule)
                 moduleObject.CodeObject = moduleCodeObject
                 moduleObject.StackFrame, _ = vm.callStack.Pop()
 
                 vm.objectStack.Push(moduleObject)
-
-                vm.tempObject = nil
-                vm.getCurrentObject().ip += 1
 
         case CALLFN:
                 args := make([]HiruObject, instruction.argument)
@@ -335,7 +227,7 @@ func (vm *HiruVM) RunOBInstruction(instruction Instruction) {
                 names := codeObject.nameSegment.Entries()
 
                 // Empujamos un nuevo StackFrame al CallStack
-                sf := NewStackFrame("TODO")
+                sf := NewStackFrame("TODO", codeObject, vm.ip)
                 sf.MakeLinkTo(vm.callStack.GetTopMost())
                 vm.callStack.Push(sf)
 
@@ -354,24 +246,22 @@ func (vm *HiruVM) RunOBInstruction(instruction Instruction) {
                 //
                 // En donde los valores de const son los del arreglo "args"
                 for i := 0; uint32(i) < instruction.argument; i++ {
-                        vm.DebugPrint("name %v => %v", names[i], args[i])
+                        vm.DebugPrint("name %v => %v", names[i], args[instruction.argument - uint32(i) - 1])
                         vm.callStack.Define(names[i].value, args[i])
                 }
 
                 func_body := codeObject.bytecodeSegment
 
+                vm.ip = 0
+
                 // TODO: Meter todo esto en un método (fn *HiruFunction).Call(args ...interface{})
-                vm.tempObject = codeObject
-
                 vm.RunOBIBytecode(func_body)
-
-                vm.callStack.Pop()
-                vm.tempObject = nil
-                vm.getCurrentObject().ip += 1
+                return
 
         case JMPABS:
                 vm.DebugPrint("Instruction JMPABS")
-                vm.getCurrentObject().ip += instruction.argument / 8
+                vm.ip += instruction.argument / 8
+                return
 
         case PJMPF:
                 vm.DebugPrint("Instruction PJMPF")
@@ -380,10 +270,10 @@ func (vm *HiruVM) RunOBInstruction(instruction Instruction) {
                 boolean := val.(*HiruBoolean)
 
                 if !boolean.Value {
-                        vm.getCurrentObject().ip += instruction.argument / 8
-                } else {
-                        vm.getCurrentObject().ip += 1
+                        vm.ip = instruction.argument / 8
+                        return
                 }
+
         case PJMPT:
                 vm.DebugPrint("Instruction PJMPT")
 
@@ -391,10 +281,10 @@ func (vm *HiruVM) RunOBInstruction(instruction Instruction) {
                 boolean := val.(*HiruBoolean)
 
                 if boolean.Value {
-                        vm.getCurrentObject().ip += instruction.argument / 8
-                } else {
-                        vm.getCurrentObject().ip += 1
+                        vm.ip = instruction.argument / 8
+                        return
                 }
+
         case JUMPFWD:
                 vm.DebugPrint("Instruction JUMPFWD")
         case BSTR:
@@ -417,7 +307,6 @@ func (vm *HiruVM) RunOBInstruction(instruction Instruction) {
                 attr, _ := module.StackFrame.ResolveName(name.value)
 
                 vm.objectStack.Push(attr)
-                vm.getCurrentObject().ip += 1
 
         case IMPORT:
                 // No es necesario para OBI
@@ -430,14 +319,12 @@ func (vm *HiruVM) RunOBInstruction(instruction Instruction) {
 
                 vm.DebugPrint("Instruction LNAME: name '%v' resolved to %v", name.value, object.Inspect())
                 vm.objectStack.Push(object)
-                vm.getCurrentObject().ip += 1
 
         case LCONST:
                 constant := vm.GetConstantAt(instruction.argument)
 
                 vm.DebugPrint("Instruction LCONST: %v", constant.Inspect())
                 vm.objectStack.Push(constant)
-                vm.getCurrentObject().ip += 1
 
         case SNAME:
                 name := vm.GetNameAt(instruction.argument)
@@ -449,6 +336,9 @@ func (vm *HiruVM) RunOBInstruction(instruction Instruction) {
                 vm.DebugPrint("Instruction SNAME: '%s' => %v", name.value, object.Inspect())
 
                 vm.callStack.Define(name.value, object)
-                vm.getCurrentObject().ip += 1
+
+        case EXIT:
         }
+
+        vm.ip += 1
 }

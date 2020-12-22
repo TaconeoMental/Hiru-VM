@@ -75,19 +75,27 @@ func (cs *CallStack) PrettyPrint() {
 
 // STACK FRAME
 type StackFrame struct {
-        name   string
-        parent *StackFrame
+        name       string
+        parent     *StackFrame
         enviroment map[string]HiruObject
+        object     *CodeObject
+        blockStack []*Block
+        ReturnAddress uint32
 }
 
-func NewStackFrame(name string) *StackFrame {
-        sf := StackFrame{name: name}
+func NewStackFrame(name string, co *CodeObject, reta uint32) *StackFrame {
+        sf := StackFrame{name: name, object: co}
         sf.enviroment = make(map[string]HiruObject)
+        sf.ReturnAddress = reta
         return &sf
 }
 
 func (sf StackFrame) GetName() string {
         return sf.name
+}
+
+func (sf StackFrame) GetObject() *CodeObject {
+        return sf.object
 }
 
 func (sf *StackFrame) MakeLinkTo(parent *StackFrame) {

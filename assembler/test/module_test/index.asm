@@ -39,4 +39,5 @@ SEGMENT .code
     callfn 2  (math.add.call)
 
     sname  @1 (final)
+    ret
     

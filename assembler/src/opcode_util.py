@@ -22,6 +22,8 @@ no_args = [
     "RET",
     "MAKEFN",
     "MAKEMOD",
+    "EXIT",
+    "PRINT",
 ]
 
 literal_args = [

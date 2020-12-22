@@ -20,22 +20,24 @@ module Opcodes
   RET = 0x12
   MAKEFN = 0x13
   MAKEMOD = 0x14
-  NO_ARGS = 0x15
+  EXIT = 0x15
+  PRINT = 0x16
+  NO_ARGS = 0x17
 
-  BLIST = 0x16
-  BSTR = 0x17
   JUMPFWD = 0x18
   PJMPT = 0x19
   PJMPF = 0x1a
   JMPABS = 0x1b
   CALLFN = 0x1c
-  LITERAL_ARGS = 0x1d
+  BLIST = 0x1d
+  BSTR = 0x1e
+  LITERAL_ARGS = 0x1f
 
-  LATTR = 0x1e
-  IMPORT = 0x1f
-  LNAME = 0x20
-  LCONST = 0x21
-  SNAME = 0x22
+  LATTR = 0x20
+  IMPORT = 0x21
+  LNAME = 0x22
+  LCONST = 0x23
+  SNAME = 0x24
 end
 
 def opcode_from_string(str)
@@ -82,6 +84,10 @@ def opcode_from_string(str)
          Opcodes::MAKEFN
        when "makemod"
          Opcodes::MAKEMOD
+       when "exit"
+         Opcodes::EXIT
+       when "print"
+         Opcodes::PRINT
        when "blist"
          Opcodes::BLIST
        when "bstr"
@@ -154,6 +160,10 @@ def opcode_str(op)
          "makefn"
        when Opcodes::MAKEMOD
          "makemod"
+       when Opcodes::EXIT
+         "exit"
+       when Opcodes::PRINT
+         "print"
        when Opcodes::BLIST
          "blist"
        when Opcodes::BSTR

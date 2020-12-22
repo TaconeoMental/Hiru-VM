@@ -25,6 +25,7 @@ To dissasemble the previously compiled bytecode file you can run the following c
 $ ./assembler/dis.rb fib.hbc
 ```
 Which will output this text into the terminal:
+
 <img width="60%" src="https://raw.githubusercontent.com/TaconeoMental/Hiru-VM/main/assets/dis_example.png" />
 
 ### Running

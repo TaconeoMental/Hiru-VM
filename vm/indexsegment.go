@@ -24,14 +24,14 @@ package vm
 // +--------+--------+--------------------------------------------------------+
 type IndexSegment struct {
         // Cantidad de entradas en el segmento (Siempre debería ser 4)
-        numberEntries  uint32
+        numberEntries  int32
 
         // Entradas individuales. Nombre exportado
         entries []IndexSegmentEntry
 }
 
 // Constructor de un segmento de índice.
-func NewIndexSegment(entries uint32) *IndexSegment {
+func NewIndexSegment(entries int32) *IndexSegment {
         is := new(IndexSegment)
         is.numberEntries = entries
         is.entries = make([]IndexSegmentEntry, entries)
@@ -42,7 +42,7 @@ func (is *IndexSegment) AddSegment(segment IndexSegmentEntry) {
         is.entries[segment.Type()] = segment
 }
 
-type IndexSegmentEntryType uint32
+type IndexSegmentEntryType int32
 const (
         typeIndexSegment IndexSegmentEntryType = iota
         typeConstantSegment
@@ -59,13 +59,13 @@ type IndexSegmentEntry struct {
         entryType     IndexSegmentEntryType
 
         // El desfase del inicio de la entrada relativo al inicio del archivo
-        relativeStart uint32
+        relativeStart int32
 
         // El largo de la entrada contando su header
-        length        uint32
+        length        int32
 }
 
-func NewIndexSegmentEntry(t uint32, start uint32, length uint32) *IndexSegmentEntry {
+func NewIndexSegmentEntry(t int32, start int32, length int32) *IndexSegmentEntry {
         return &IndexSegmentEntry{
                 entryType: IndexSegmentEntryType(t),
                 relativeStart: start,

@@ -16,11 +16,11 @@ package vm
 //   +--------+--------+--------------------------------------------------------+
 
 type BytecodeSegment struct {
-        numberEntries uint32
+        numberEntries int32
         entries       []Instruction
 }
 
-func NewBytecodeSegment(entries uint32) *BytecodeSegment {
+func NewBytecodeSegment(entries int32) *BytecodeSegment {
         return &BytecodeSegment{
                 numberEntries: entries,
                 entries: make([]Instruction, 0)}
@@ -34,17 +34,17 @@ func (bs *BytecodeSegment) Instructions() []Instruction {
         return bs.entries
 }
 
-func (bs *BytecodeSegment) InstructionAt(index uint32) Instruction {
+func (bs *BytecodeSegment) InstructionAt(index int32) Instruction {
         return bs.entries[index]
 }
 
 
 type Instruction struct {
         opcode   Opcode
-        argument uint32
+        argument int32
 }
 
-func NewInstruction(op Opcode, arg uint32) *Instruction {
+func NewInstruction(op Opcode, arg int32) *Instruction {
         ins := Instruction{
                 opcode: op,
                 argument: arg}

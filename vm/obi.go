@@ -6,13 +6,13 @@ import (
 )
 
 // Busca una constante en el data segment del objecto actual
-func (vm *HiruVM) GetConstantAt(index uint32) HiruObject {
+func (vm *HiruVM) GetConstantAt(index int32) HiruObject {
         object := vm.CurrentObject()
         return object.dataSegment.ConstantAt(index)
 }
 
 // Busca un nombre en el name segment del objecto actual
-func (vm *HiruVM) GetNameAt(index uint32) NameSegmentEntry {
+func (vm *HiruVM) GetNameAt(index int32) NameSegmentEntry {
         object := vm.CurrentObject()
         return object.nameSegment.NameAt(index)
 }
@@ -145,12 +145,13 @@ func (vm *HiruVM) RunOBInstruction(instruction Instruction) {
 
         case CMPLT:
                 vm.DebugPrint("Instruction CMPLT")
-                operand1, _ := vm.objectStack.Pop()
                 operand2, _ := vm.objectStack.Pop()
+                operand1, _ := vm.objectStack.Pop()
 
                 num1 := operand1.(*HiruNumber)
                 num2 := operand2.(*HiruNumber)
 
+                vm.DebugPrint("Instruction CMPLT: %v < %v = %v", (*num1).Value, (*num2).Value, (*num1).Value < (*num2).Value)
 
                 result := new(HiruBoolean)
                 result.Value = (*num1).Value < (*num2).Value
@@ -214,7 +215,7 @@ func (vm *HiruVM) RunOBInstruction(instruction Instruction) {
 
         case CALLFN:
                 args := make([]HiruObject, instruction.argument)
-                for i := 0; uint32(i) < instruction.argument; i++ {
+                for i := 0; int32(i) < instruction.argument; i++ {
                         pop, _ := vm.objectStack.Pop()
                         args[i] = pop
                 }
@@ -245,8 +246,8 @@ func (vm *HiruVM) RunOBInstruction(instruction Instruction) {
                 // sname  n
                 //
                 // En donde los valores de const son los del arreglo "args"
-                for i := 0; uint32(i) < instruction.argument; i++ {
-                        vm.DebugPrint("name %v => %v", names[i], args[instruction.argument - uint32(i) - 1])
+                for i := 0; int32(i) < instruction.argument; i++ {
+                        vm.DebugPrint("name %v => %v", names[i], args[instruction.argument - int32(i) - 1])
                         vm.callStack.Define(names[i].value, args[i])
                 }
 
@@ -258,9 +259,18 @@ func (vm *HiruVM) RunOBInstruction(instruction Instruction) {
                 vm.RunOBIBytecode(func_body)
                 return
 
+        case SLOOP:
+                vm.DebugPrint("Instruction SLOOP: New loop block handled at %v", instruction.argument)
+                loopBlock := NewBlock("loop", instruction.argument)
+                vm.callStack.PushBlock(loopBlock)
+
+        case PLOOP:
+                vm.DebugPrint("Instruction PLOOP: Loop block popped")
+                //vm.callStack.PopBlock()
+
         case JMPABS:
-                vm.DebugPrint("Instruction JMPABS")
-                vm.ip += instruction.argument / 8
+                vm.DebugPrint("Instruction JMPABS to %v", instruction.argument)
+                vm.ip = instruction.argument / 8
                 return
 
         case PJMPF:
@@ -290,7 +300,7 @@ func (vm *HiruVM) RunOBInstruction(instruction Instruction) {
         case BSTR:
         case BLIST:
                 elems := make([]HiruObject, instruction.argument)
-                for i := 0; uint32(i) < instruction.argument; i++ {
+                for i := 0; int32(i) < instruction.argument; i++ {
                         pop, _ := vm.objectStack.Pop()
                         elems[i] = pop
                 }

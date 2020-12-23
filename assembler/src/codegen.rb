@@ -50,7 +50,7 @@ class BytecodeFile
   end
 
   def write_byte(num)
-    buffer = [num].pack("C>")
+    buffer = [num].pack("c>")
     @hbc_file.write(buffer)
   end
 
@@ -59,7 +59,7 @@ class BytecodeFile
   end
 
   def write_4_bytes(num)
-    buffer = [num].pack("L>")
+    buffer = [num].pack("l>")
     @hbc_file.write(buffer)
   end
 
@@ -224,7 +224,7 @@ class CodeGenerator
       instruction_count = 0
       number_repr = 0
       node.code.each do |key, val|
-        if val == "l"
+        if val.is_a? Ast::Label
           jumps[key] = [number_repr, instruction_count]
           number_repr += 1
           instruction_count -= 1
@@ -236,7 +236,7 @@ class CodeGenerator
       pushIndex(4)
 
       node.code.each do |key, val|
-        if val == "l"
+        if val.is_a? Ast::Label
           next
         end
 

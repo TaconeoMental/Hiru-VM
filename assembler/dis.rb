@@ -18,15 +18,15 @@ class Disassembler
   end
 
   def readNum
-    read.unpack("N")[0]
+    read.unpack("l>*")[0]
   end
 
   def read_compare(num)
-    read == [num].pack("N")
+    read == [num].pack("l>")
   end
 
   def compare(num, num2)
-    num == [num2].pack("N")
+    num == [num2].pack("l>")
   end
 
   def addError(desc)
@@ -115,7 +115,7 @@ class Disassembler
     count = 0
     instructions.each do |opcode, arg|
       if jump_positions.include? count
-        puts "\n#{indent(level)}   >> #{opcode_str(opcode)} #{arg}"
+        puts "\n#{indent(level)}   >> #{opcode_str(opcode)} #{arg} [#{count * 8}]"
       else
         puts "#{indent(level + 1)}#{opcode_str(opcode)} #{arg}"
       end

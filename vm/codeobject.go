@@ -26,7 +26,7 @@ func ReadIndexSegment(hf *HiruFile) (*IndexSegment, error) {
 
         index_seg := NewIndexSegment(entries)
 
-        for i := uint32(1); i <= entries; i++ {
+        for i := int32(1); i <= entries; i++ {
                 etype := hf.Read4Bytes()
                 start := hf.Read4Bytes()
                 length := hf.Read4Bytes()
@@ -43,7 +43,7 @@ func ReadDataSegment(hf *HiruFile) (*DataSegment, error) {
 
         data_seg := NewDataSegment(entries)
 
-        for i := uint32(1); i <= entries; i++ {
+        for i := int32(1); i <= entries; i++ {
                 etype := hf.Read4Bytes()
 
                 length := hf.Read4Bytes()
@@ -83,7 +83,7 @@ func ReadNameSegment(hf *HiruFile) (*NameSegment, error) {
 
         name_seg := NewNameSegment(entries)
 
-        for i := uint32(1); i <= entries; i++ {
+        for i := int32(1); i <= entries; i++ {
                 length := hf.Read4Bytes()
 
                 name := string(hf.ReadBytes(int(length)))
@@ -100,7 +100,7 @@ func ReadBytecodeSegment(hf *HiruFile) (*BytecodeSegment, error) {
 
         bytecode_seg := NewBytecodeSegment(entries)
 
-        for i := uint32(1); i <= entries; i++ {
+        for i := int32(1); i <= entries; i++ {
                 op := hf.Read4Bytes()
 
                 arg := hf.Read4Bytes()

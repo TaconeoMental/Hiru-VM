@@ -11,21 +11,22 @@ module TokenKind
   OP_CLOSE_BRACKETS = 0x04
   OP_DOT            = 0x05
   OP_COLON          = 0x06
+  OP_NEG            = 0x07
 
-  LITERAL_STRING = 0x07
-  LITERAL_FLOAT  = 0x08
-  LITERAL_INT    = 0x09
+  LITERAL_STRING = 0x08
+  LITERAL_FLOAT  = 0x09
+  LITERAL_INT    = 0x0A
 
-  IDENTIFIER = 0x0A
+  IDENTIFIER = 0x0B
 
-  KEY_HIRU = 0x0B
-  KEY_SEGMENT = 0x0C
-  KEY_DATA    = 0x0D
-  KEY_NAMES   = 0x0E
-  KEY_CODE    = 0x0F
+  KEY_HIRU = 0x0C
+  KEY_SEGMENT = 0x0D
+  KEY_DATA    = 0x0E
+  KEY_NAMES   = 0x0F
+  KEY_CODE    = 0x10
 
-  UNKNOWN = 0x10
-  EOF = 0x11
+  UNKNOWN = 0x11
+  EOF = 0x12
 end
 
 def token_string(tok)
@@ -167,6 +168,8 @@ class Tokenizer
           TokenKind::OP_DOT
         when ':'
           TokenKind::OP_COLON
+        when '-'
+          TokenKind::OP_NEG
         when '['
           TokenKind::OP_OPEN_BRACKETS
         when ']'

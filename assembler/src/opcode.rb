@@ -21,23 +21,25 @@ module Opcodes
   MAKEFN = 0x13
   MAKEMOD = 0x14
   EXIT = 0x15
-  PRINT = 0x16
-  NO_ARGS = 0x17
+  PLOOP = 0x16
+  PRINT = 0x17
+  NO_ARGS = 0x18
 
-  JUMPFWD = 0x18
-  PJMPT = 0x19
-  PJMPF = 0x1a
-  JMPABS = 0x1b
-  CALLFN = 0x1c
-  BLIST = 0x1d
-  BSTR = 0x1e
-  LITERAL_ARGS = 0x1f
+  BLIST = 0x19
+  BSTR = 0x1a
+  JUMPFWD = 0x1b
+  PJMPT = 0x1c
+  PJMPF = 0x1d
+  JMPABS = 0x1e
+  CALLFN = 0x1f
+  SLOOP = 0x20
+  LITERAL_ARGS = 0x21
 
-  LATTR = 0x20
-  IMPORT = 0x21
-  LNAME = 0x22
-  LCONST = 0x23
-  SNAME = 0x24
+  LATTR = 0x22
+  IMPORT = 0x23
+  LNAME = 0x24
+  LCONST = 0x25
+  SNAME = 0x26
 end
 
 def opcode_from_string(str)
@@ -86,6 +88,8 @@ def opcode_from_string(str)
          Opcodes::MAKEMOD
        when "exit"
          Opcodes::EXIT
+       when "ploop"
+         Opcodes::PLOOP
        when "print"
          Opcodes::PRINT
        when "blist"
@@ -102,6 +106,8 @@ def opcode_from_string(str)
          Opcodes::JMPABS
        when "callfn"
          Opcodes::CALLFN
+       when "sloop"
+         Opcodes::SLOOP
        when "sname"
          Opcodes::SNAME
        when "lconst"
@@ -162,6 +168,8 @@ def opcode_str(op)
          "makemod"
        when Opcodes::EXIT
          "exit"
+       when Opcodes::PLOOP
+         "ploop"
        when Opcodes::PRINT
          "print"
        when Opcodes::BLIST
@@ -178,6 +186,8 @@ def opcode_str(op)
          "jmpabs"
        when Opcodes::CALLFN
          "callfn"
+       when Opcodes::SLOOP
+         "sloop"
        when Opcodes::SNAME
          "sname"
        when Opcodes::LCONST
@@ -204,4 +214,4 @@ def literal_arg?(op)
   return op < Opcodes::LITERAL_ARGS && op > Opcodes::NO_ARGS
 end
 
-$jumps = [Opcodes::PJMPT, Opcodes::PJMPF, Opcodes::JMPABS, Opcodes::JUMPFWD]
+$jumps = [Opcodes::PJMPT, Opcodes::PJMPF, Opcodes::JMPABS, Opcodes::JUMPFWD, Opcodes::SLOOP]

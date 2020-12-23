@@ -113,9 +113,13 @@ class Parser
       when TokenKind::LITERAL_STRING
         pushToken
         operand = Ast::StringLiteral.new(@current_token.value)
+      when TokenKind::OP_NEG
+        pushToken
+        consumePeek(TokenKind::LITERAL_INT)
+        operand = Ast::IntLiteral.new(@current_token.value.to_i * -1)
       when TokenKind::LITERAL_INT
         pushToken
-        operand = Ast::IntLiteral.new(@current_token.value)
+        operand = Ast::IntLiteral.new(@current_token.value.to_i)
       end
       operand
     end

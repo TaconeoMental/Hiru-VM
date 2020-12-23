@@ -73,20 +73,29 @@ func (cs *CallStack) PrettyPrint() {
         fmt.Println("#### END CALL STACK ####")
 }
 
+func (cs *CallStack) PushBlock(block *Block) {
+        cs.GetTopMost().PushBlock(block)
+}
+
+func (cs *CallStack) PopBlock() (*Block, error) {
+        return cs.GetTopMost().PopBlock()
+}
+
 // STACK FRAME
 type StackFrame struct {
         name       string
         parent     *StackFrame
         enviroment map[string]HiruObject
         object     *CodeObject
-        blockStack []*Block
-        ReturnAddress uint32
+        blockStack BlockStack
+        ReturnAddress int32
 }
 
-func NewStackFrame(name string, co *CodeObject, reta uint32) *StackFrame {
+func NewStackFrame(name string, co *CodeObject, reta int32) *StackFrame {
         sf := StackFrame{name: name, object: co}
         sf.enviroment = make(map[string]HiruObject)
         sf.ReturnAddress = reta
+        sf.blockStack = *NewBlockStack()
         return &sf
 }
 
@@ -96,6 +105,14 @@ func (sf StackFrame) GetName() string {
 
 func (sf StackFrame) GetObject() *CodeObject {
         return sf.object
+}
+
+func (sf * StackFrame) PushBlock(block *Block) {
+        sf.blockStack.Push(block)
+}
+
+func (sf * StackFrame) PopBlock() (*Block, error) {
+        return sf.blockStack.Pop()
 }
 
 func (sf *StackFrame) MakeLinkTo(parent *StackFrame) {

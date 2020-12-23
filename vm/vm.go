@@ -35,7 +35,7 @@ type HiruVM struct {
 
         objectStack  ObjectStack
 
-        ip          uint32
+        ip          int32
 }
 
 func NewVm(filepath string, options VmOptions) (*HiruVM, error) {

@@ -17,12 +17,12 @@ package vm
 //   +--------+--------+--------------------------------------------------------+
 
 type NameSegment struct {
-        numberEntries uint32
+        numberEntries int32
         entries       []NameSegmentEntry
 }
 
 // Constructor de un segmento de índice.
-func NewNameSegment(entries uint32) *NameSegment {
+func NewNameSegment(entries int32) *NameSegment {
         ns := NameSegment{numberEntries: entries}
         ns.entries = make([]NameSegmentEntry, 0)
         return &ns
@@ -32,17 +32,17 @@ func (ns *NameSegment) AddEntry(segment NameSegmentEntry) {
         ns.entries = append(ns.entries, segment)
 }
 
-func (ns *NameSegment) NameAt(index uint32) NameSegmentEntry {
+func (ns *NameSegment) NameAt(index int32) NameSegmentEntry {
         return ns.entries[index]
 }
 
 type NameSegmentEntry struct {
         // El largo de la entrada contando su header
-        length uint32
+        length int32
         value  string
 }
 
-func NewNameSegmentEntry(value string, length uint32) *NameSegmentEntry {
+func NewNameSegmentEntry(value string, length int32) *NameSegmentEntry {
         return &NameSegmentEntry{length: length, value: value}
 }
 

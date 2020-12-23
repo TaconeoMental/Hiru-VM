@@ -91,8 +91,8 @@ func (hf *HiruFile) ReadByte() byte {
         */
 }
 
-func (hf *HiruFile) Read4Bytes() uint32 {
-        return binary.BigEndian.Uint32(hf.ReadBytes(4))
+func (hf *HiruFile) Read4Bytes() int32 {
+        return int32(binary.BigEndian.Uint32(hf.ReadBytes(4)))
         /*
         var w uint32
         binary.Read(hf.buffer, binary.BigEndian, &w)

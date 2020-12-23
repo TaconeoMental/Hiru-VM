@@ -132,7 +132,7 @@ module Ast
     end
 
     def addLabel(name)
-      @code_hash.push([name, "l"])
+      @code_hash.push([name, Label.new("l")])
     end
 
     def codeLength
@@ -239,6 +239,22 @@ module Ast
       puts indent + $AST_LAST + @Value
     end
   end
+
+  class Label
+    attr_accessor :Value
+    def initialize(val=nil)
+      @Value = val
+    end
+
+    def print_tree(indent, last)
+      print indent
+      indent += indentation(last)
+
+      puts "Label"
+      puts indent + $AST_LAST + @Value
+    end
+  end
+
 
   class IndexNode
     attr_accessor :value

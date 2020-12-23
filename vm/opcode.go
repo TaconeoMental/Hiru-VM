@@ -24,16 +24,18 @@ const (
         MAKEFN
         MAKEMOD
         EXIT
+        PLOOP
         PRINT
         NO_ARGS
 
+        BLIST
+        BSTR
         JUMPFWD
         PJMPT
         PJMPF
         JMPABS
         CALLFN
-        BLIST
-        BSTR
+        SLOOP
         LITERAL_ARGS
 
         LATTR

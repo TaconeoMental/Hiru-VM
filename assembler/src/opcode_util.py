@@ -23,6 +23,7 @@ no_args = [
     "MAKEFN",
     "MAKEMOD",
     "EXIT",
+    "PLOOP",
     "PRINT",
 ]
 
@@ -34,6 +35,7 @@ literal_args = [
     "PJMPF",
     "JMPABS",
     "CALLFN",
+    "SLOOP",
 ]
 
 index_args = [

@@ -45,11 +45,11 @@ SEGMENT .code
 true:
     lconst @2
     sname  @0
-    ret
+    exit
 
 end:
     lconst @3
     sname  @0
-    ret
+    exit
 
 

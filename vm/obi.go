@@ -198,7 +198,6 @@ func (vm *HiruVM) RunOBInstruction(instruction Instruction) {
                 }
                 magic := newFile.Read4Bytes()
                 if magic != 0x48495255 {
-
                         return
                 }
                 moduleCodeObject := ReadObject(newFile)
@@ -206,11 +205,14 @@ func (vm *HiruVM) RunOBInstruction(instruction Instruction) {
                 sf := NewStackFrame(nameString, moduleCodeObject, vm.ip)
                 vm.callStack.Push(sf)
 
+                vm.ip = 0
                 vm.RunOBIBytecode(vm.CurrentObject().bytecodeSegment)
 
                 moduleObject := new(HiruModule)
                 moduleObject.CodeObject = moduleCodeObject
                 moduleObject.StackFrame, _ = vm.callStack.Pop()
+
+                vm.ip = moduleObject.StackFrame.ReturnAddress
 
                 vm.objectStack.Push(moduleObject)
 

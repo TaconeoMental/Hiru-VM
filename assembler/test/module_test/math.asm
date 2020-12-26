@@ -15,4 +15,4 @@ SEGMENT .names
 SEGMENT .code
     lconst @0
     sname  @0
-    ret
+    exit

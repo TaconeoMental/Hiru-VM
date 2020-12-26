@@ -421,7 +421,7 @@ func (vm *HiruVM) RunOBInstruction(instruction Instruction) {
                 i := int32(0)
                 for i < instruction.argument {
                         vm.DebugPrint("name %v => %v", names[i], args[instruction.argument - i - 1])
-                        vm.callStack.Define(names[i].value, args[i])
+                        vm.callStack.Define(names[i].value, args[instruction.argument - int32(i) - 1])
                         i++
                 }
 

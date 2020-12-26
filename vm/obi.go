@@ -353,9 +353,9 @@ func (vm *HiruVM) RunOBInstruction(instruction Instruction) {
                 vm.DebugPrint("END LSELF")
 
         case SATTR:
+                hiruInstance, _ := vm.objectStack.Pop()
                 hiruValue, _ := vm.objectStack.Pop()
 
-                hiruInstance, _ := vm.objectStack.Pop()
                 instance := hiruInstance.(*HiruInstance)
 
                 name := vm.GetNameAt(instruction.argument)

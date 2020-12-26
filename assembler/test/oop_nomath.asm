@@ -36,16 +36,16 @@ SEGMENT .data
                         bmul
                         sname  @0
 
-                        lself
                         lname  @0
+                        lself
                         sattr  @0
 
-                        lself
                         lname  @1
+                        lself
                         sattr  @1
 
-                        lself
                         lname  @2
+                        lself
                         sattr  @2
 
                         lself

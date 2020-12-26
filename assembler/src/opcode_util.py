@@ -24,6 +24,8 @@ no_args = [
     "MAKEMOD",
     "EXIT",
     "PLOOP",
+    "LCTXT",
+    "BUILDS",
     "PRINT",
 ]
 
@@ -36,6 +38,7 @@ literal_args = [
     "JMPABS",
     "CALLFN",
     "SLOOP",
+    "INITS",
 ]
 
 index_args = [
@@ -44,6 +47,7 @@ index_args = [
     "LNAME",
     "IMPORT",
     "LATTR",
+    "SATTR",
 ]
 
 no_args_separator = "NO_ARGS"
@@ -64,30 +68,24 @@ def main():
     print("RUBY CODE")
     print(header)
 
-    count = 0
-    while count < len(no_args):
-        print(op_count(no_args[count], count))
-        count += 1
+    last_index = 0
+    for index, noarg in enumerate(no_args):
+        print(op_count(noarg, index))
+    last_index += len(no_args) + 1
 
-    print(op_count(no_args_separator, count))
+    print(op_count(no_args_separator, last_index))
     print()
-    count += 1
 
-    literal_args_len = len(literal_args)
-    max_index = literal_args_len + count
-    while count  < max_index:
-        print(op_count(literal_args[count % literal_args_len - 1], count))
-        count += 1
+    for index, litarg in enumerate(literal_args):
+        print(op_count(litarg, index + last_index + 1))
+    last_index += len(literal_args) + 1
 
-    print(op_count(literal_args_separator, count))
+    print(op_count(literal_args_separator, last_index))
     print()
-    count += 1
 
-    index_args_len = len(index_args)
-    max_index = index_args_len + count
-    while count  < max_index:
-        print(op_count(index_args[max_index - count - 1], count))
-        count += 1
+    for index, indexarg in enumerate(index_args):
+        print(op_count(indexarg, index + last_index + 1))
+    last_index += len(index_args)
 
     print("end\n")
 

@@ -22,24 +22,30 @@ module Opcodes
   MAKEMOD = 0x14
   EXIT = 0x15
   PLOOP = 0x16
-  PRINT = 0x17
-  NO_ARGS = 0x18
+  LCTXT = 0x17
+  LVARS = 0x18
+  LSELF = 0x19
+  BUILDS = 0x1A
+  PRINT = 0x1b
+  NO_ARGS = 0x1c
 
-  BLIST = 0x19
-  BSTR = 0x1a
-  JUMPFWD = 0x1b
-  PJMPT = 0x1c
-  PJMPF = 0x1d
-  JMPABS = 0x1e
-  CALLFN = 0x1f
-  SLOOP = 0x20
-  LITERAL_ARGS = 0x21
+  BSTR = 0x1d
+  JUMPFWD = 0x1e
+  PJMPT = 0x1f
+  PJMPF = 0x20
+  JMPABS = 0x21
+  CALLFN = 0x22
+  SLOOP = 0x23
+  INITS = 0x24
+  BLIST = 0x25
+  LITERAL_ARGS = 0x26
 
-  LATTR = 0x22
-  IMPORT = 0x23
-  LNAME = 0x24
-  LCONST = 0x25
-  SNAME = 0x26
+  SNAME = 0x27
+  LCONST = 0x28
+  LNAME = 0x29
+  IMPORT = 0x2A
+  LATTR = 0x2B
+  SATTR = 0x2C
 end
 
 def opcode_from_string(str)
@@ -90,6 +96,14 @@ def opcode_from_string(str)
          Opcodes::EXIT
        when "ploop"
          Opcodes::PLOOP
+       when "lctxt"
+         Opcodes::LCTXT
+       when "lvars"
+         Opcodes::LVARS
+       when "lself"
+         Opcodes::LSELF
+       when "builds"
+         Opcodes::BUILDS
        when "print"
          Opcodes::PRINT
        when "blist"
@@ -108,6 +122,8 @@ def opcode_from_string(str)
          Opcodes::CALLFN
        when "sloop"
          Opcodes::SLOOP
+       when "inits"
+         Opcodes::INITS
        when "sname"
          Opcodes::SNAME
        when "lconst"
@@ -118,6 +134,8 @@ def opcode_from_string(str)
          Opcodes::IMPORT
        when "lattr"
          Opcodes::LATTR
+       when "sattr"
+         Opcodes::SATTR
        end
   op
 end
@@ -170,6 +188,14 @@ def opcode_str(op)
          "exit"
        when Opcodes::PLOOP
          "ploop"
+       when Opcodes::LCTXT
+         "lctxt"
+       when Opcodes::LVARS
+         "lvars"
+       when Opcodes::LSELF
+         "lself"
+       when Opcodes::BUILDS
+         "builds"
        when Opcodes::PRINT
          "print"
        when Opcodes::BLIST
@@ -188,6 +214,8 @@ def opcode_str(op)
          "callfn"
        when Opcodes::SLOOP
          "sloop"
+       when Opcodes::INITS
+         "inits"
        when Opcodes::SNAME
          "sname"
        when Opcodes::LCONST
@@ -198,6 +226,8 @@ def opcode_str(op)
          "import"
        when Opcodes::LATTR
          "lattr"
+       when Opcodes::SATTR
+         "sattr"
        end
   str
 end

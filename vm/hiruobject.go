@@ -101,3 +101,62 @@ func (f *HiruModule) Inspect() string {
 func (f *HiruModule) RawObject() *CodeObject {
         return f.CodeObject
 }
+
+// Estructura en Hiru
+type HiruStructure struct {
+        CodeObject *CodeObject
+        StackFrame *HiruStructureVars
+}
+
+func (s *HiruStructure) Type() string {
+        return "Structure"
+}
+
+func (s HiruStructure) Inspect() string {
+        return "<Struct>"
+}
+
+func (s *HiruStructure) RawObject() *CodeObject {
+        return s.CodeObject
+}
+
+func (s *HiruStructure) Vars() *HiruStructureVars {
+        return s.StackFrame
+}
+
+// Instancia de una estructura en Hiru
+type HiruInstance struct {
+        CodeObject *CodeObject
+        StackFrame *HiruStructureVars
+}
+
+func (i *HiruInstance) Type() string {
+        return "Instance"
+}
+
+func (i HiruInstance) Inspect() string {
+        return "<Instance>"
+}
+
+func (i *HiruInstance) RawObject() *CodeObject {
+        return i.CodeObject
+}
+
+// Vars representa el stackframe interno de una estructura
+type HiruStructureVars struct {
+        sf *StackFrame
+}
+
+// En teoría nunca se van a usar, pero es para que cumpla la interfaz de
+// HiruOBject
+func (v *HiruStructureVars) Type() string {
+        return "Vars"
+}
+
+func (v HiruStructureVars) Inspect() string {
+        return "<Vars>"
+}
+
+func (v *HiruStructureVars) StackFrame() *StackFrame {
+        return v.sf
+}

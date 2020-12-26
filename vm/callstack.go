@@ -60,6 +60,10 @@ func (cs *CallStack) GetTopMost() *StackFrame {
         return cs.records[len(cs.records)-1]
 }
 
+func (cs *CallStack) GetCurrentBlockType() string {
+        return cs.GetTopMost().blockStack.GetTopMostType()
+}
+
 func (cs *CallStack) Define(name string, obj HiruObject) HiruObject {
         cs.GetTopMost().Define(name, obj)
         return obj
@@ -105,6 +109,10 @@ func (sf StackFrame) GetName() string {
 
 func (sf StackFrame) GetObject() *CodeObject {
         return sf.object
+}
+
+func (sf *StackFrame) GetEnv() map[string]HiruObject {
+        return sf.enviroment
 }
 
 func (sf * StackFrame) PushBlock(block *Block) {

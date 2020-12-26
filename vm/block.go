@@ -32,7 +32,7 @@ func (bs *BlockStack) Push(b *Block) {
     bs.blocks = append(bs.blocks, b)
 }
 
-func (bs *BlockStack)  Pop() (*Block, error) {
+func (bs *BlockStack) Pop() (*Block, error) {
     bs.lock.Lock()
     defer bs.lock.Unlock()
 
@@ -47,4 +47,12 @@ func (bs *BlockStack)  Pop() (*Block, error) {
     return res, nil
 }
 
+func (bs *BlockStack) GetTopMostType() string {
+    l := len(bs.blocks)
+    if l == 0 {
+        return "Empty"
+    }
 
+    res := bs.blocks[l - 1]
+    return res.blockType
+}

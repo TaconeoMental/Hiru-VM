@@ -28,6 +28,7 @@ func (vm *HiruVM) runObjectBasedVm() (error) {
         vm.callStack.Push(sf)
 
         vm.RunOBIBytecode(mainObject.bytecodeSegment)
+        vm.DebugPrint("%v", mainObject)
 
         return nil
 
@@ -41,7 +42,6 @@ func (vm *HiruVM) RunOBIBytecode(bs *BytecodeSegment) {
                 }
 
                 vm.RunOBInstruction(instruction)
-
         }
 }
 
@@ -72,6 +72,7 @@ func (vm *HiruVM) RunOBInstruction(instruction Instruction) {
                 num2 := operand2.(*HiruNumber)
 
                 result := new(HiruNumber)
+                vm.DebugPrint("Instruction BPOW: %v ^ %v = %v", (*num1).Value, (*num2).Value, int64(math.Pow(float64((*num1).Value), float64((*num2).Value))))
                 result.Value = int64(math.Pow(float64((*num1).Value), float64((*num2).Value)))
                 vm.objectStack.Push(result)
 
@@ -82,6 +83,7 @@ func (vm *HiruVM) RunOBInstruction(instruction Instruction) {
                 num1 := operand1.(*HiruNumber)
                 num2 := operand2.(*HiruNumber)
 
+                vm.DebugPrint("Instruction BMUL: %v * %v = %v", (*num1).Value, (*num2).Value, (*num1).Value * (*num2).Value)
                 result := new(HiruNumber)
                 result.Value = (*num1).Value * (*num2).Value
                 vm.objectStack.Push(result)
@@ -173,13 +175,12 @@ func (vm *HiruVM) RunOBInstruction(instruction Instruction) {
 
 
         case RET:
-                // TODO: No sé muy bien qué hacer acá todavía
-                vm.DebugPrint("Instruction RET")
                 retVal, _ := vm.callStack.Pop()
-                vm.DebugPrint("%v", retVal.ReturnAddress)
+                vm.DebugPrint("Instruction RET, returning to %v", retVal.ReturnAddress)
                 vm.ip = retVal.ReturnAddress
 
         case PRINT:
+                vm.DebugPrint("Instruction PRINT")
                 operand, _ := vm.objectStack.Pop()
                 fmt.Println(operand.Inspect())
 
@@ -221,17 +222,25 @@ func (vm *HiruVM) RunOBInstruction(instruction Instruction) {
                 }
 
                 hfunc, _ := vm.objectStack.Pop()
-                vm.DebugPrint("Instruction CALLFN: %d arguments", instruction.argument)
+                vm.DebugPrint("Instruction CALLFN: %d arguments, IP: %v", instruction.argument, vm.ip)
+                vm.DebugPrint("BLOCKTYPE: %v", vm.callStack.GetCurrentBlockType())
+
 
                 hfuncStruct := hfunc.(*HiruFunction) // Type assertion
                 codeObject := (*hfuncStruct).RawObject()
                 names := codeObject.nameSegment.Entries()
 
                 // Empujamos un nuevo StackFrame al CallStack
-                sf := NewStackFrame("TODO", codeObject, vm.ip)
+                sf := NewStackFrame("Function", codeObject, vm.ip)
                 sf.MakeLinkTo(vm.callStack.GetTopMost())
-                vm.callStack.Push(sf)
 
+                if vm.callStack.GetCurrentBlockType() == "METHOD" {
+                        vm.DebugPrint("yay")
+                        object, _ := vm.objectStack.Pop()
+                        sf.Define("__self__", object)
+
+                }
+                vm.callStack.Push(sf)
                 // Ahora asignaremos los valores de args a los primeros n
                 // nombres que tenga definida la función, con n =
                 // instruction.argument.
@@ -257,6 +266,7 @@ func (vm *HiruVM) RunOBInstruction(instruction Instruction) {
 
                 // TODO: Meter todo esto en un método (fn *HiruFunction).Call(args ...interface{})
                 vm.RunOBIBytecode(func_body)
+                vm.callStack.PopBlock()
                 return
 
         case SLOOP:
@@ -297,6 +307,7 @@ func (vm *HiruVM) RunOBInstruction(instruction Instruction) {
 
         case JUMPFWD:
                 vm.DebugPrint("Instruction JUMPFWD")
+
         case BSTR:
         case BLIST:
                 elems := make([]HiruObject, instruction.argument)
@@ -307,16 +318,131 @@ func (vm *HiruVM) RunOBInstruction(instruction Instruction) {
 
 
         case LATTR:
-                name := vm.GetNameAt(instruction.argument)
-                vm.DebugPrint("Instruction LATTR: name '%v'", name)
-
                 object, _ := vm.objectStack.Pop()
+                name := vm.GetNameAt(instruction.argument)
+                vm.DebugPrint("Instruction LATTR: name '%v' of object %v", name, object.Inspect())
 
-                // Asserteamos (?) que module es tipo HiruModule
-                module := object.(*HiruModule)
-                attr, _ := module.StackFrame.ResolveName(name.value)
+                switch object.(type) {
+                case *HiruModule:
+                        // Asserteamos (?) que module es tipo HiruModule
+                        module := object.(*HiruModule)
+                        attr, _ := module.StackFrame.ResolveName(name.value)
+                        vm.objectStack.Push(attr)
 
-                vm.objectStack.Push(attr)
+                case *HiruInstance:
+                        vm.DebugPrint("Is instance")
+                        instance := object.(*HiruInstance)
+
+                        attr, _ := instance.StackFrame.StackFrame().ResolveName(name.value)
+                        vm.DebugPrint("%v resolved to %v", name, attr)
+
+                        if attr.Type() == "Function" {
+                                vm.callStack.PushBlock(&Block{"METHOD", vm.ip})
+                                vm.objectStack.Push(instance)
+                        }
+                        vm.objectStack.Push(attr)
+                }
+
+        case LSELF:
+                vm.DebugPrint("Instruction LSELF")
+
+                object, _ := vm.callStack.ResolveName("__self__")
+                instance := object.(*HiruInstance)
+                vm.objectStack.Push(instance)
+                vm.DebugPrint("%v", instance.StackFrame.StackFrame().GetEnv())
+                vm.DebugPrint("END LSELF")
+
+        case SATTR:
+                hiruValue, _ := vm.objectStack.Pop()
+
+                hiruInstance, _ := vm.objectStack.Pop()
+                instance := hiruInstance.(*HiruInstance)
+
+                name := vm.GetNameAt(instruction.argument)
+
+                vm.DebugPrint("Instruction SATTR: name '%v' to %v", name, hiruValue.Inspect())
+
+                instance.StackFrame.StackFrame().Define(name.value, hiruValue)
+                //vm.objectStack.Push(hiruInstance)
+
+
+        case LVARS:
+                vm.DebugPrint("Instruction LVARS")
+
+                sf, _ := vm.callStack.Pop()
+                vm.objectStack.Push(&HiruStructureVars{sf})
+                vm.callStack.Push(sf)
+                vm.DebugPrint("LVARS: %v", sf)
+
+        case BUILDS:
+                vm.DebugPrint("Instruction BUILDS")
+
+                hobject,  _ := vm.objectStack.Pop()
+                hvars := hobject.(*HiruStructureVars)
+
+                structureObject := new(HiruStructure)
+                structureObject.StackFrame = hvars
+
+                vm.objectStack.Push(structureObject)
+
+        case INITS:
+                vm.DebugPrint("Instruction INITS: %v args", instruction.argument)
+                args := make([]HiruObject, instruction.argument)
+                for i := 0; int32(i) < instruction.argument; i++ {
+                        pop, _ := vm.objectStack.Pop()
+                        args[i] = pop
+                }
+
+                // Este objeto debería ser una estructura
+                hiruObject, _ := vm.objectStack.Pop()
+
+                // Asserteamos que es una estructura y sacamos su StackFrame
+                structureObject := hiruObject.(*HiruStructure)
+                structureStackFrame := structureObject.StackFrame
+
+                // Creamos el objeto instancia. Este quedará en TOS al final de
+                // esta función.
+                hiruInstance := new(HiruInstance)
+
+                // Buscamos la función __new__ en el StackFrame de la instancia
+                __new__Object, _ := structureStackFrame.StackFrame().ResolveName("__new__")
+                __new__Function := __new__Object.(*HiruFunction)
+                vm.DebugPrint("Found __new__. Resolved to %v", __new__Function.Inspect())
+
+                // codeObject es el Objeto función correspondiente a __new__
+                codeObject := (*__new__Function).RawObject()
+                names := codeObject.nameSegment.Entries()
+                vm.DebugPrint("__new__ entries: %v", names)
+
+                sf := NewStackFrame("__new__", codeObject, vm.ip)
+                sf.MakeLinkTo(structureStackFrame.StackFrame())
+                vm.callStack.Push(sf)
+
+                i := int32(0)
+                for i < instruction.argument {
+                        vm.DebugPrint("name %v => %v", names[i], args[instruction.argument - i - 1])
+                        vm.callStack.Define(names[i].value, args[i])
+                        i++
+                }
+
+                for i < int32(len(names)) {
+                        vm.DebugPrint("name %v => %v", names[i], HiruNull{})
+                        vm.callStack.Define(names[i].value, new(HiruNull))
+                        i++
+                }
+                func_body := codeObject.bytecodeSegment
+
+                sf, _ = vm.callStack.Pop()
+                hiruInstance.StackFrame = &HiruStructureVars{sf}
+
+                // TODO: Meter todo esto en un método (fn *HiruFunction).Call(args ...interface{})
+                vm.callStack.Push(hiruInstance.StackFrame.StackFrame())
+
+                vm.callStack.Define("__self__", hiruInstance)
+
+                vm.ip = 0
+                vm.RunOBIBytecode(func_body)
+                return
 
         case IMPORT:
                 // No es necesario para OBI

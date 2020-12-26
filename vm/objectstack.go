@@ -3,6 +3,7 @@ package vm
 import (
         "sync"
         "errors"
+        "fmt"
 )
 
 type ObjectStack struct {
@@ -38,4 +39,11 @@ func (objs *ObjectStack) Pop() (HiruObject, error) {
     return res, nil
 }
 
+func (obs *ObjectStack) PrettyPrint() {
+        fmt.Println("#### OBJECT STACK ####")
+        for _, s := range obs.stack {
+                fmt.Println(s.Inspect())
+        }
+        fmt.Println("#### END OBJECT STACK ####")
+}
 

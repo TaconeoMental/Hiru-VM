@@ -3,6 +3,7 @@ package vm
 import (
         "math"
         "fmt"
+        "os"
 )
 
 // Busca una constante en el data segment del objecto actual
@@ -427,14 +428,10 @@ func (vm *HiruVM) RunOBInstruction(instruction Instruction) {
                         i++
                 }
 
-                for i < int32(len(names)) {
-                        vm.DebugPrint("name %v => %v", names[i], HiruNull{})
-                        vm.callStack.Define(names[i].value, new(HiruNull))
-                        i++
-                }
                 func_body := codeObject.bytecodeSegment
 
                 sf, _ = vm.callStack.Pop()
+                sf.MakeLinkTo(vm.callStack.GetBottomMost())
                 hiruInstance.StackFrame = &HiruStructureVars{sf}
 
                 // TODO: Meter todo esto en un método (fn *HiruFunction).Call(args ...interface{})
@@ -452,6 +449,7 @@ func (vm *HiruVM) RunOBInstruction(instruction Instruction) {
                 name := vm.GetNameAt(instruction.argument)
                 object, err := vm.callStack.ResolveName(name.value)
                 if err != nil {
+                        fmt.Fprintf(os.Stderr, "Hiru: Variable '%v' not defined", name.value)
                         vm.DebugPrint(err.Error())
                 }
 

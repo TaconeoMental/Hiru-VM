@@ -60,6 +60,11 @@ func (cs *CallStack) GetTopMost() *StackFrame {
         return cs.records[len(cs.records)-1]
 }
 
+func (cs *CallStack) GetBottomMost() *StackFrame {
+        return cs.records[0]
+}
+
+
 func (cs *CallStack) GetCurrentBlockType() string {
         return cs.GetTopMost().blockStack.GetTopMostType()
 }

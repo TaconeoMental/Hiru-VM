@@ -29,7 +29,6 @@ SEGMENT .data
                     SEGMENT .names
                         @0    x
                         @1    y
-                        @2    nombre
                     SEGMENT .code
                         lconst @0
                         lname  @0
@@ -43,10 +42,6 @@ SEGMENT .data
                         lname  @1
                         lself
                         sattr  @1
-
-                        lname  @2
-                        lself
-                        sattr  @2
 
                         lself
                         ret

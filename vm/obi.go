@@ -417,8 +417,9 @@ func (vm *HiruVM) RunOBInstruction(instruction Instruction) {
                 names := codeObject.nameSegment.Entries()
                 vm.DebugPrint("__new__ entries: %v", names)
 
-                sf := NewStackFrame("__new__", codeObject, vm.ip)
-                sf.MakeLinkTo(structureStackFrame.StackFrame())
+                sf := NewStackFrame("instance", codeObject, vm.ip)
+                sf.enviroment = structureStackFrame.StackFrame().GetEnv()
+                //sf.MakeLinkTo(structureStackFrame.StackFrame())
                 vm.callStack.Push(sf)
 
                 i := int32(0)
@@ -427,6 +428,7 @@ func (vm *HiruVM) RunOBInstruction(instruction Instruction) {
                         vm.callStack.Define(names[i].value, args[instruction.argument - int32(i) - 1])
                         i++
                 }
+
 
                 func_body := codeObject.bytecodeSegment
 
